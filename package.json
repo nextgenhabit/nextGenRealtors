@@ -1,0 +1,14 @@
+{
+  "name": "nextgen-realtors-sms-proxy",
+  "version": "1.0.0",
+  "description": "SMS OTP proxy server for NextGen Realtors",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
+}

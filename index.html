@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="NextGen Realtors – Trusted real estate agent in Hyderabad. Browse plots, flats, and villas for sale. Contact us today!">
+  <title>NextGen Realtors | Premium Properties in Hyderabad</title>
+  <link rel="stylesheet" href="css/style.css?v=16">
+  <!-- Translations -->
+  <script src="js/i18n/en.js?v=35"></script>
+  <script src="js/i18n/te.js?v=35"></script>
+  <script src="js/i18n/hi.js?v=35"></script>
+  <script src="js/i18n/i18n.js?v=16"></script>
+  <!-- Favicon emoji -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
+</head>
+
+<body>
+
+  <!-- ====== NAVIGATION ====== -->
+  <nav id="navbar">
+    <div class="nav-inner">
+      <div class="nav-logo" style="position:relative;">
+        <img id="site-logo-img" src="images/Logo.png" alt="NextGen Realtors Logo"
+          style="height:40px; margin-right:8px; object-fit:contain;"
+          onerror="if(this.src.endsWith('.png')){this.src='images/Logo.jpg';}else if(this.src.endsWith('.jpg')){this.src='images/Logo.jpeg';}else{this.style.display='none';}">
+        <div class="nav-logo-icon" id="site-logo-icon" style="display:none;"></div>
+        <div class="nav-logo-text">
+          <span class="nav-logo-name">NextGen Realtors</span>
+          <span class="nav-logo-tagline">Property Advisor · Hyderabad</span>
+        </div>
+      </div>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#about" data-page="about" data-i18n="nav_about" onclick="navigate('about');  return false;">About
+            Me</a></li>
+        <li><a href="#plots" data-page="plots" data-i18n="nav_plots"
+            onclick="navigate('plots');  return false;">Plots</a></li>
+        <li><a href="#flats" data-page="flats" data-i18n="nav_flats"
+            onclick="navigate('flats');  return false;">Flats</a></li>
+        <li><a href="#villas" data-page="villas" data-i18n="nav_villas"
+            onclick="navigate('villas'); return false;">Villas</a></li>
+        <li><a href="#commercial" data-page="commercial" data-i18n="nav_commercial"
+            onclick="navigate('commercial'); return false;">Commercial</a>
+        </li>
+        <li><a href="#reviews" data-page="reviews" data-i18n="nav_reviews"
+            onclick="navigate('reviews');return false;">Reviews</a></li>
+        <!-- Subscribe nav link hidden temporarily
+        <li><a href="#subscribe" data-page="subscribe" data-i18n="nav_subscribe"
+            onclick="navigate('subscribe');return false;">Subscribe</a></li>
+        -->
+        <li><a href="#contact" data-page="contact" data-i18n="nav_contact"
+            onclick="navigate('contact');return false;">Contact Us</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <div class="lang-switcher">
+          <button class="lang-btn" data-lang="en" onclick="I18n.setLanguage('en')">E</button>
+          <button class="lang-btn" data-lang="te" onclick="I18n.setLanguage('te')">T</button>
+          <button class="lang-btn" data-lang="hi" onclick="I18n.setLanguage('hi')">H</button>
+        </div>
+        <button id="admin-btn" onclick="showAdminLoginModal()">🔐 <span data-i18n="nav_admin">Admin</span></button>
+        <button id="admin-cpw-btn" class="btn btn-ghost" onclick="openChangePasswordModal()"
+          style="display:none; padding:4px 8px; font-size:1.1rem; border:none;" title="Change Password">🔑</button>
+        <span id="admin-badge">ADMIN</span>
+        <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ====== PAGE CONTENT ====== -->
+  <main id="page-content"></main>
+
+  <!-- ====== FOOTER ====== -->
+  <footer id="site-footer">
+    <p>© 2026 <strong>NextGen Future works Private Limited</strong> · Hyderabad, Telangana · <span
+        data-i18n="footer_rights">All rights
+        reserved.</span></p>
+    <p style="margin-top:6px;font-size:0.8rem;opacity:0.6" data-i18n="footer_tagline">Your Trusted
+      Property Partner.
+    </p>
+  </footer>
+
+
+  <!-- ====== TOAST CONTAINER ====== -->
+  <div id="toast-container"></div>
+
+  <!-- =====================================
+       MODALS
+  ===================================== -->
+
+  <!-- Admin Login Modal -->
+  <div class="modal-overlay" id="admin-login-modal">
+    <div class="modal admin-modal">
+      <div class="modal-header">
+        <h3>Admin Login</h3>
+        <button class="modal-close" onclick="closeModal('admin-login-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="admin-modal-icon">🔐</div>
+        <p class="admin-modal-subtitle">Enter your admin password to manage listings.</p>
+        <div class="form-group">
+          <label class="form-label" style="display:flex; justify-content:space-between;">
+            Password
+            <a href="#" style="font-weight:400; font-size:0.85rem; color:var(--primary); text-decoration:none;"
+              onclick="openForgotPasswordModal(); return false;">Forgot Password?</a>
+          </label>
+          <input class="form-control" type="password" id="admin-pw-input" placeholder="Enter password"
+            onkeydown="if(event.key==='Enter') handleAdminLogin()">
+          <div class="form-error" id="admin-pw-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('admin-login-modal')">Cancel</button>
+        <button class="btn btn-primary" id="admin-login-submit-btn" onclick="handleAdminLogin()">🔓 Login</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Property Form Modal (Add/Edit) -->
+  <div class="modal-overlay" id="prop-form-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="prop-form-modal-title">Add Listing</h3>
+        <button class="modal-close" onclick="closeModal('prop-form-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="prop-form-type">
+        <input type="hidden" id="prop-form-id">
+        <div id="prop-form-fields"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('prop-form-modal')">Cancel</button>
+        <button class="btn btn-primary" id="prop-form-submit" onclick="submitPropertyForm()">✅ Add Listing</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Property Detail Modal -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal" style="max-width:680px">
+      <div class="modal-header">
+        <h3 id="detail-modal-title">Property Details</h3>
+        <button class="modal-close" onclick="closeModal('detail-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="detail-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Admin Logout Confirmation Modal -->
+  <div class="modal-overlay" id="admin-logout-modal">
+    <div class="modal admin-modal">
+      <div class="modal-header">
+        <h3>Logout Admin Mode</h3>
+        <button class="modal-close" onclick="closeModal('admin-logout-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:32px 28px">
+        <div style="font-size:3rem;margin-bottom:14px">🔓</div>
+        <p style="color:var(--navy);font-size:1rem;font-weight:600;margin-bottom:8px">Exit Admin Mode?</p>
+        <p style="color:var(--mid-grey);font-size:0.9rem">You will no longer be able to add or edit listings until you
+          log in again.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('admin-logout-modal')">Cancel</button>
+        <button class="btn btn-danger" onclick="confirmLogout()">🔒 Yes, Logout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal-overlay" id="admin-change-pw-modal">
+    <div class="modal admin-modal">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <button class="modal-close" onclick="closeModal('admin-change-pw-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input class="form-control" type="password" id="cpw-current" placeholder="Enter current password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input class="form-control" type="password" id="cpw-new" placeholder="Enter new password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Security Question (for recovery)</label>
+          <input class="form-control" type="text" id="cpw-sq" placeholder="e.g. What is the name of your first pet?">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Security Answer</label>
+          <input class="form-control" type="text" id="cpw-sa" placeholder="Enter answer">
+          <div class="form-error" id="cpw-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('admin-change-pw-modal')">Cancel</button>
+        <button class="btn btn-primary" id="cpw-submit-btn" onclick="submitChangePassword()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal-overlay" id="admin-forgot-pw-modal">
+    <div class="modal admin-modal">
+      <div class="modal-header">
+        <h3>Reset Password</h3>
+        <button class="modal-close" onclick="closeModal('admin-forgot-pw-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="forgot-pw-step-1">
+        <p style="margin-bottom:16px; font-size:0.9rem; color:var(--dark-grey);">To reset your password, please answer
+          your security question.</p>
+        <div class="form-group">
+          <label class="form-label" style="color:var(--navy)">Security Question</label>
+          <p id="fpw-question-text" style="font-weight:600; font-size:1.05rem; margin-bottom:12px;"></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Answer</label>
+          <input class="form-control" type="text" id="fpw-answer" placeholder="Enter answer">
+          <div class="form-error" id="fpw-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer" id="forgot-pw-footer-1">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('admin-forgot-pw-modal')">Cancel</button>
+        <button class="btn btn-primary" id="fpw-verify-btn" onclick="verifySecurityAnswer()">Verify Answer</button>
+      </div>
+
+      <div class="modal-body" id="forgot-pw-step-2" style="display:none;">
+        <p style="margin-bottom:16px; font-size:0.9rem; color:green; font-weight:600;">✅ Answer correct! Set your new
+          password.</p>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input class="form-control" type="password" id="fpw-new-pw" placeholder="Enter new password">
+          <div class="form-error" id="fpw-reset-error"></div>
+        </div>
+      </div>
+      <div class="modal-footer" id="forgot-pw-footer-2" style="display:none;">
+        <button class="btn btn-primary" id="fpw-reset-btn" onclick="submitResetPassword()">💾 Reset Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Delete Confirmation Modal -->
+  <div class="modal-overlay" id="delete-confirm-modal">
+    <div class="modal admin-modal">
+      <div class="modal-header">
+        <h3>Delete Listing</h3>
+        <button class="modal-close" onclick="closeModal('delete-confirm-modal')">✕</button>
+      </div>
+      <div class="modal-body" style="text-align:center;padding:32px 28px">
+        <div style="font-size:3rem;margin-bottom:14px">🗑️</div>
+        <p style="color:var(--navy);font-size:1rem;font-weight:600;margin-bottom:8px">Delete this listing?</p>
+        <p style="color:var(--mid-grey);font-size:0.9rem">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('delete-confirm-modal')">Cancel</button>
+        <button class="btn btn-danger" id="delete-confirm-btn">🗑️ Yes, Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notify Subscribers Modal (WhatsApp Click-to-Chat) -->
+  <div class="modal-overlay" id="notify-subscribers-modal">
+    <div class="modal admin-modal" style="max-width:500px">
+      <div class="modal-header">
+        <h3>🔔 Notify Subscribers</h3>
+        <button class="modal-close"
+          onclick="closeModal('notify-subscribers-modal'); if (window._currentPage) window._currentPage();">✕</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <p style="color:var(--mid-grey);font-size:0.95rem;margin-bottom:16px;">
+          Property added successfully! Would you like to notify your subscribers via WhatsApp?
+        </p>
+        <div id="subscribers-list"
+          style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('notify-subscribers-modal'); if (window._currentPage) window._currentPage();">Skip for
+          Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Contact Modal -->
+  <div class="modal-overlay" id="edit-contact-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Contact Info</h3>
+        <button class="modal-close" onclick="closeModal('edit-contact-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ec-id">
+        <div class="form-group">
+          <label class="form-label">Phone / WhatsApp</label>
+          <input class="form-control" id="ec-phone" placeholder="e.g. +91 98765 43210">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-control" id="ec-email" placeholder="e.g. alex.rajan@realtors.in">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Office Address</label>
+          <textarea class="form-control" id="ec-address" placeholder="102, Brigade Road..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Working Hours</label>
+          <textarea class="form-control" id="ec-hours" placeholder="Mon–Sat: 9 AM – 7 PM..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('edit-contact-modal')">Cancel</button>
+        <button class="btn btn-primary" id="ec-submit" onclick="submitEditContact()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit About Modal -->
+  <div class="modal-overlay" id="edit-about-modal">
+    <div class="modal" style="max-width:700px; max-height:85vh; overflow-y:auto">
+      <div class="modal-header">
+        <h3>Edit About Details</h3>
+        <button class="modal-close" onclick="closeModal('edit-about-modal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="ea-id">
+        <h4 style="margin-top:0; color:var(--navy)">Profile Details</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Name</label>
+            <input class="form-control" id="ea-name" placeholder="NextGen Realtors">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tagline</label>
+            <input class="form-control" id="ea-tagline" placeholder="Your Trusted Guide">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Title</label>
+          <input class="form-control" id="ea-title" placeholder="Senior Property Consultant · Bangalore">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bio (Paragraph 1)</label>
+          <textarea class="form-control" id="ea-bio1" style="min-height:80px"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bio (Paragraph 2)</label>
+          <textarea class="form-control" id="ea-bio2" style="min-height:80px"></textarea>
+        </div>
+
+        <h4 style="margin-top:20px; color:var(--navy); padding-top:15px; border-top:1px solid var(--light-grey)">Mission
+          Statement</h4>
+        <div class="form-group">
+          <label class="form-label">Mission Text</label>
+          <textarea class="form-control" id="ea-mission" style="min-height:100px"></textarea>
+        </div>
+
+        <h4 style="margin-top:20px; color:var(--navy); padding-top:15px; border-top:1px solid var(--light-grey)">Vision
+          Statement</h4>
+        <div class="form-group">
+          <label class="form-label">Vision Text</label>
+          <textarea class="form-control" id="ea-vision" style="min-height:100px"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer"
+        style="position:sticky; bottom:0; background:white; padding-top:15px; border-top:1px solid var(--light-grey)">
+        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
+          onclick="closeModal('edit-about-modal')">Cancel</button>
+        <button class="btn btn-primary" id="ea-submit" onclick="submitEditAbout()">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SCRIPTS ====== -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script src="js/data.js?v=35"></script>
+  <script src="js/admin.js?v=35"></script>
+  <script src="js/app.js?v=35"></script>
+
+</body>
+
+</html>
