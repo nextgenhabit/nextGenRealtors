@@ -3,6 +3,7 @@ const te = {
     "nav_about": "మా గురించి",
     "nav_plots": "ప్లాట్లు",
     "nav_flats": "ఫ్లాట్లు",
+    "nav_apartments": "అపార్ట్మెంట్లు",
     "nav_villas": "విల్లాలు",
     "nav_commercial": "వాణిజ్య",
     "nav_reviews": "సమీక్షలు",
@@ -88,7 +89,7 @@ const te = {
     "about_mission": "మా లక్ష్యం",
     "about_vision": "మా దార్శనికత",
     "about_clients_say_pre": "క్లయింట్లు ఏమి చెబుతారు",
-    "about_clients_quote": "\"మా కలల ఇంటిని కొనడం అలెక్స్ చాలా ఆనందంగా చేసాడు.\"",
+    "about_clients_quote": "\"మా కలల ఇంటిని కొనడం NextGen Realtors ద్వారా చాలా ఆనందదాయకంగా జరిగింది.\"",
     "about_clients_author": "— ప్రియ & సురేష్ శర్మ, జూబ్లీహిల్స్",
     "about_btn_reviews": "అన్ని రివ్యూలు చదవండి →",
     "about_contact_btn": "📞 మమ్మల్ని సంప్రదించండి"

@@ -3,6 +3,7 @@ const hi = {
     "nav_about": "हमारे बारे में",
     "nav_plots": "प्लॉट",
     "nav_flats": "फ्लैट",
+    "nav_apartments": "अपार्टमेंट्स",
     "nav_villas": "विलास",
     "nav_commercial": "कमर्शियल",
     "nav_reviews": "समीक्षाएँ",
@@ -88,7 +89,7 @@ const hi = {
     "about_mission": "हमारा मिशन",
     "about_vision": "हमारा दृष्टिकोण",
     "about_clients_say_pre": "ग्राहक क्या कहते हैं",
-    "about_clients_quote": "\"एलेक्स ने हमारे सपनों का घर खरीदना बहुत आसान और आनंददायक बना दिया।\"",
+    "about_clients_quote": "\"NextGen Realtors ने हमारे सपनों का घर खरीदना बहुत आसान और आनंददायक बना दिया।\"",
     "about_clients_author": "— प्रिया और सुरेश शर्मा, जुबली हिल्स",
     "about_btn_reviews": "सभी समीक्षाएँ पढ़ें →",
     "about_contact_btn": "📞 संपर्क करें"

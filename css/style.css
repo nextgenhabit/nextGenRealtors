@@ -1908,8 +1908,22 @@ textarea.form-control {
 }
 
 /* ================================================================
-   DETAIL MODAL — Image Gallery
+   DETAIL MODAL — Layout & Gallery
    ================================================================ */
+.detail-page-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 900px) {
+  .detail-page-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 48px;
+  }
+}
+
 .detail-gallery {
   display: flex;
   flex-direction: column;
@@ -1931,9 +1945,11 @@ textarea.form-control {
 }
 
 .detail-gallery-img.active {
-  max-height: 340px;
+  max-height: 500px;
   opacity: 1;
   border-color: var(--gold);
+  object-fit: contain;
+  background: var(--navy-light);
   order: -1;
   /* always first */
 }
@@ -1947,7 +1963,7 @@ textarea.form-control {
 
 .detail-gallery .detail-gallery-img.active {
   grid-column: 1 / -1;
-  max-height: 320px;
+  max-height: 500px;
 }
 
 .detail-gallery .detail-gallery-img:not(.active) {
@@ -1962,7 +1978,7 @@ textarea.form-control {
 
 .detail-gallery:has(.detail-gallery-img:nth-child(2)) .detail-gallery-img.active {
   grid-column: 1 / -1;
-  max-height: 280px;
+  max-height: 450px;
 }
 
 .detail-gallery:has(.detail-gallery-img:nth-child(2)) .detail-gallery-img:not(.active) {
@@ -2085,3 +2101,366 @@ textarea.form-control {
   border-color: transparent;
   box-shadow: 0 6px 18px rgba(201, 168, 76, 0.45);
 }
+
+/* ============================================================
+   AUTH MODAL — Google Sign-In
+   ============================================================ */
+.auth-modal {
+  max-width: 440px;
+}
+
+.auth-modal-body {
+  text-align: center;
+  padding: 32px 36px 36px;
+}
+
+@media (max-width: 480px) {
+  .auth-modal-body {
+    padding: 24px 20px 28px;
+  }
+}
+
+.auth-modal-icon {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+  animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bounceIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.auth-modal-title {
+  font-size: 1.3rem;
+  color: var(--navy);
+  font-family: 'Playfair Display', serif;
+  margin-bottom: 10px;
+}
+
+.auth-modal-subtitle {
+  font-size: 0.88rem;
+  color: var(--mid-grey);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.auth-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+  background: var(--off-white);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  text-align: left;
+}
+
+.auth-benefit-item {
+  font-size: 0.86rem;
+  color: var(--dark-grey);
+  font-weight: 500;
+}
+
+/* Google Sign-In Button */
+.btn-google-signin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--white);
+  border: 2px solid #dadce0;
+  border-radius: var(--radius-md);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #3c4043;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+}
+
+.btn-google-signin:hover {
+  background: #f8f9fa;
+  border-color: #aaa;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.14);
+  transform: translateY(-1px);
+}
+
+.btn-google-signin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-modal-error {
+  color: var(--danger);
+  font-size: 0.82rem;
+  min-height: 18px;
+  margin-bottom: 8px;
+}
+
+.auth-modal-note {
+  font-size: 0.75rem;
+  color: var(--mid-grey);
+  line-height: 1.5;
+}
+
+/* Auth spinner */
+.auth-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #dadce0;
+  border-top-color: #4285F4;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   NAV — User Area (Sign In button & Avatar Dropdown)
+   ============================================================ */
+#nav-user-area {
+  display: flex;
+  align-items: center;
+}
+
+/* "Sign In" ghost button in navbar */
+.btn-signin-nav {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 100px;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.btn-signin-nav:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--navy);
+}
+
+/* Logged-in user nav area */
+.user-nav-wrap {
+  position: relative;
+}
+
+.user-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  cursor: pointer;
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.user-nav-btn:hover {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.35);
+}
+
+.user-avatar-img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--gold);
+}
+
+.user-avatar-initials {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--navy);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.user-nav-name {
+  max-width: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-nav-chevron {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+/* Dropdown Menu */
+.user-nav-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+  border: 1px solid var(--light-grey);
+  min-width: 220px;
+  z-index: 3000;
+  animation: dropdownIn 0.2s ease;
+  overflow: hidden;
+}
+
+.user-nav-menu.open {
+  display: block;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.user-nav-info {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.user-nav-info strong {
+  font-size: 0.9rem;
+  color: var(--navy);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-nav-info span {
+  font-size: 0.78rem;
+  color: var(--mid-grey);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.user-nav-divider {
+  border: none;
+  border-top: 1px solid var(--light-grey);
+  margin: 0;
+}
+
+.user-nav-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.87rem;
+  color: var(--dark-grey);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.user-nav-menu-item:hover {
+  background: var(--off-white);
+  color: var(--navy);
+}
+
+/* Responsive: hide user name text on small screens */
+@media (max-width: 600px) {
+  .user-nav-name { display: none; }
+  .user-nav-btn { padding: 4px; }
+  .btn-signin-nav span { display: none; }
+}
+
+/* ---- 4-column stats grid (About page with Registered Users stat) ---- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.stats-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 900px) {
+  .stats-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  /* Override base .stats-grid constraint of max-width: 280px at <600px */
+  .stats-grid.stats-grid-4 {
+    max-width: 100%;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid.stats-grid-4 {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+}
+
+/* Registered Users highlight card */
+.stat-card-users {
+  border: 1px solid rgba(201, 168, 76, 0.45);
+  background: rgba(201, 168, 76, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card-users::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), #f5c842);
+  border-radius: 3px 3px 0 0;
+}
+
+.stat-card-users .stat-label {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ---- Admin Button Visibility ---- */
+/* Hide the admin button by default */
+#admin-btn {
+  display: none; /* Only shown when .show-admin-btn is added via shortcut */
+}
+
+/* Class added by keyboard shortcut to reveal the admin button */
+#admin-btn.show-admin-btn {
+  display: inline-flex !important;
+}
+

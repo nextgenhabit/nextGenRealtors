@@ -68,7 +68,7 @@ function imgOrIcon(url, icon = '🏠') {
 
 // ---- Property Card ----
 function renderPropertyCard(item, type) {
-  const icon = type === 'plots' ? '🌿' : type === 'flats' ? '🏢' : type === 'villas' ? '🏡' : '🏙️';
+  const icon = type === 'plots' ? '🌿' : type === 'flats' ? '🏢' : type === 'apartments' ? '🏢' : type === 'villas' ? '🏡' : '🏙️';
   const specsHtml = buildCardSpecs(item, type);
 
   return `
@@ -76,7 +76,7 @@ function renderPropertyCard(item, type) {
     <div class="card-image-wrap">
       ${imgOrIcon(item.imageUrl, icon)}
       <div class="card-badge">
-        <span class="badge badge-navy">${type === 'plots' ? t('nav_plots') : type === 'flats' ? t('nav_flats') : type === 'villas' ? t('nav_villas') : t('nav_commercial')}</span>
+        <span class="badge badge-navy">${type === 'plots' ? t('nav_plots') : type === 'flats' ? t('nav_flats') : type === 'apartments' ? 'Apartments' : type === 'villas' ? t('nav_villas') : t('nav_commercial')}</span>
         ${item.status === 'Sold Out'
       ? `<span class="badge" style="background:var(--danger);color:white;margin-left:4px">${t('status_soldout')}</span>`
       : `<span class="badge" style="background:#25D366;color:white;margin-left:4px">${t('status_available')}</span>`}
@@ -92,7 +92,7 @@ function renderPropertyCard(item, type) {
       <div class="card-specs">${specsHtml}</div>
       ${item.description ? `<p class="card-desc">${esc(item.description)}</p>` : ''}
       <div class="card-footer">
-        <button class="btn btn-primary btn-sm" onclick="navigate('detail/${type}/${item.id}')">${t('btn_view_details')}</button>
+        <button class="btn btn-primary btn-sm" onclick="viewDetailOrAuth('${type}','${item.id}')">${t('btn_view_details')}</button>
         <div class="card-admin-actions">
           <button class="btn-icon btn-edit" title="Edit" onclick="editProperty('${type}','${item.id}')">✏️</button>
           <button class="btn-icon btn-del"  title="Delete" onclick="deleteProperty('${type}','${item.id}')">🗑️</button>
@@ -106,6 +106,7 @@ function buildCardSpecs(item, type) {
   const tag = (icon, val) => val ? `<span class="spec-tag">${icon} ${esc(val)}</span>` : '';
   if (type === 'plots') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('📐', item.area) + tag('🧭', item.facing);
   if (type === 'flats') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('🛏️', item.bhk) + tag('📐', item.area) + tag('🎨', item.furnishing);
+  if (type === 'apartments') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('🏢', (item.blocks ? item.blocks + ' Blocks' : '')) + tag('📏', item.flatSizes) + tag('🏠', (item.totalUnits ? item.totalUnits + ' Units' : ''));
   if (type === 'villas') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('🛏️', item.bedrooms) + tag('🌳', item.landArea) + (item.hasPool ? `<span class="spec-tag">🏊 Pool</span>` : '') + (item.hasGarden ? `<span class="spec-tag">🌿 Garden</span>` : '');
   if (type === 'commercial') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('📐', item.area) + tag('🏢', item.floor) + tag('🎨', item.furnishing);
   return '';
@@ -138,7 +139,7 @@ async function renderDetail(type, id) {
     if (item.district) item.district = await I18n.translateDynamic(item.district);
   }
 
-  const icon = type === 'plots' ? '🌿' : type === 'flats' ? '🏢' : type === 'villas' ? '🏡' : '🏙️';
+  const icon = type === 'plots' ? '🌿' : type === 'flats' ? '🏢' : type === 'apartments' ? '🏢' : type === 'villas' ? '🏡' : '🏙️';
   const specsHtml = buildDetailSpecs(item, type);
 
   // Build image gallery
@@ -193,27 +194,33 @@ async function renderDetail(type, id) {
     </div>
   </div>
   <section class="section" style="background:var(--white)">
-    <div class="container" style="max-width:800px">
-      ${galleryHtml}
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div class="detail-modal-price" style="margin-bottom:0; font-size: 2rem; color: var(--gold); font-weight: 700;">${esc(item.price)}</div>
-        ${item.status === 'Sold Out'
-      ? `<span class="badge" style="background:var(--danger);color:white;font-size:0.9rem;padding:6px 12px">${t('status_soldout')}</span>`
-      : `<span class="badge" style="background:#25D366;color:white;font-size:0.9rem;padding:6px 12px">${t('status_available')}</span>`}
+    <div class="container" style="max-width:1100px">
+      <div class="detail-page-layout">
+        <div class="detail-left-col">
+          ${galleryHtml}
+        </div>
+        <div class="detail-right-col">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div class="detail-modal-price" style="margin-bottom:0; font-size: 2rem; color: var(--gold); font-weight: 700;">${esc(item.price)}</div>
+            ${item.status === 'Sold Out'
+          ? `<span class="badge" style="background:var(--danger);color:white;font-size:0.9rem;padding:6px 12px">${t('status_soldout')}</span>`
+          : `<span class="badge" style="background:#25D366;color:white;font-size:0.9rem;padding:6px 12px">${t('status_available')}</span>`}
+          </div>
+          <div class="detail-modal-location" style="display:flex;justify-content:space-between; margin-bottom: 16px;">
+            <span style="font-size: 1.1rem; color: var(--navy);">📍 ${esc(item.location)}</span>
+            ${item.propId ? `<span style="font-size:0.85rem;color:var(--mid-grey)">ID: #${item.propId}</span>` : ''}
+          </div>
+          ${mapsHtml}
+          ${contactHtml}
+          <div class="detail-specs-grid" style="margin-top: 24px;">${specsHtml}</div>
+          ${item.description ? `<div class="detail-desc" style="margin-top: 32px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Description</strong><br><br>${esc(item.description)}</div>` : ''}
+          ${videoHtml}
+          ${item.status !== 'Sold Out' ? `
+          <div style="margin-top:40px;padding-top:30px;border-top:1px solid var(--light-grey);text-align:center">
+            <a href="#contact" class="btn btn-primary btn-lg" onclick="navigate('contact')">📞 Enquire Now</a>
+          </div>` : ''}
+        </div>
       </div>
-      <div class="detail-modal-location" style="display:flex;justify-content:space-between; margin-bottom: 16px;">
-        <span style="font-size: 1.1rem; color: var(--navy);">📍 ${esc(item.location)}</span>
-        ${item.propId ? `<span style="font-size:0.85rem;color:var(--mid-grey)">ID: #${item.propId}</span>` : ''}
-      </div>
-      ${mapsHtml}
-      ${contactHtml}
-      <div class="detail-specs-grid" style="margin-top: 24px;">${specsHtml}</div>
-      ${item.description ? `<div class="detail-desc" style="margin-top: 32px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Description</strong><br><br>${esc(item.description)}</div>` : ''}
-      ${videoHtml}
-      ${item.status !== 'Sold Out' ? `
-      <div style="margin-top:40px;padding-top:30px;border-top:1px solid var(--light-grey);text-align:center">
-        <a href="#contact" class="btn btn-primary btn-lg" onclick="navigate('contact')">📞 Enquire Now</a>
-      </div>` : ''}
       <div style="margin-top: 40px; text-align: center;">
         <button class="btn btn-ghost" onclick="navigate('${type}')">← Return to Listings</button>
       </div>
@@ -226,6 +233,18 @@ async function renderDetail(type, id) {
 // Keep old showDetail for compatibility if needed, but we'll mainly use renderDetail now
 async function showDetail(type, id) {
   navigate(`detail/${type}/${id}`);
+}
+
+/**
+ * Gate: If user is signed in → navigate to detail page.
+ * Otherwise → show Google sign-in modal, then navigate after sign-in.
+ */
+function viewDetailOrAuth(type, id) {
+  if (typeof Auth !== 'undefined') {
+    Auth.requireAuth(() => navigate(`detail/${type}/${id}`));
+  } else {
+    navigate(`detail/${type}/${id}`);
+  }
 }
 
 /** Clicking any image in the detail gallery marks it as the "active" (large) image */
@@ -248,9 +267,10 @@ function buildDetailSpecs(item, type) {
     + spec('LP Number', item.lpNumber)
     + spec('RERA Approved', item.reraApproved)
     + spec('Contact', item.contactNumber)
-    + spec('Price', item.price)
+    + spec('Price per Sq Yard', item.price)
     + spec('Type', 'Open Plot');
   if (type === 'flats') return spec('District', item.district) + spec('Village', item.village) + spec('BHK', item.bhk) + spec('Area', item.area) + spec('Floor', item.floor) + spec('Furnishing', item.furnishing) + spec('Amenities', item.amenities) + spec('Price', item.price);
+  if (type === 'apartments') return spec('District', item.district) + spec('Village', item.village) + spec('Total Acres', item.acres) + spec('Blocks', item.blocks) + spec('Floors', item.floors) + spec('Flat Sizes', item.flatSizes) + spec('Total Units', item.totalUnits) + spec('Club House', item.clubHouseSize) + spec('Amenities', item.amenities) + spec('Price', item.price);
   if (type === 'villas') return spec('District', item.district) + spec('Village', item.village) + spec('Bedrooms', item.bedrooms) + spec('Land Area', item.landArea) + spec('Built-up Area', item.builtUpArea) + spec('Pool', item.hasPool ? '✅ Yes' : '❌ No') + spec('Garden', item.hasGarden ? '✅ Yes' : '❌ No') + spec('Price', item.price);
   if (type === 'commercial') return spec('District', item.district) + spec('Village', item.village) + spec('Super Built-up Area', item.area) + spec('Floor', item.floor) + spec('Washrooms', item.washrooms) + spec('Parking', item.parking) + spec('Furnishing', item.furnishing) + spec('Price', item.price);
   return '';
@@ -301,6 +321,7 @@ const pages = {
   about: renderAbout,
   plots: () => renderListings('plots'),
   flats: () => renderListings('flats'),
+  apartments: () => renderListings('apartments'),
   villas: () => renderListings('villas'),
   commercial: () => renderListings('commercial'),
   reviews: renderReviews,
@@ -348,10 +369,17 @@ async function renderAbout() {
   content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div></div>';
 
   let aboutData = [];
+  let registeredUsersCount = 0;
   try {
     aboutData = await DB.about.get();
   } catch (e) {
     console.error(e);
+  }
+  try {
+    const usersSnap = await db.collection('users').get();
+    registeredUsersCount = usersSnap.size;
+  } catch (e) {
+    console.error('Failed to fetch user count', e);
   }
 
   const defaultAbout = {
@@ -422,10 +450,14 @@ async function renderAbout() {
   <!-- Stats -->
   <section style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));padding:0">
     <div class="container">
-      <div class="stats-grid" style="padding:60px 0">
+      <div class="stats-grid stats-grid-4" style="padding:60px 0">
         <div class="stat-card"><div class="stat-number">${t('about_stats_1_num')}</div><div class="stat-label">${t('about_stats_1_label')}</div></div>
         <div class="stat-card"><div class="stat-number">${t('about_stats_2_num')}</div><div class="stat-label">${t('about_stats_2_label')}</div></div>
         <div class="stat-card"><div class="stat-number">${t('about_stats_3_num')}</div><div class="stat-label">${t('about_stats_3_label')}</div></div>
+        <div class="stat-card stat-card-users">
+          <div class="stat-number" id="registered-users-count">${registeredUsersCount.toLocaleString()}</div>
+          <div class="stat-label">👥 Registered Users</div>
+        </div>
       </div>
     </div>
   </section>
@@ -518,6 +550,7 @@ async function renderAbout() {
 function getAreaVal(i, type) {
   if (type === 'plots') return i.area || '';
   if (type === 'flats') return i.area || '';
+  if (type === 'apartments') return i.acres || '';
   if (type === 'villas') return i.builtUpArea || i.landArea || '';
   if (type === 'commercial') return i.area || '';
   return '';
@@ -542,24 +575,26 @@ function renderPropertyTable(items, type) {
       const statusClass = i.status === 'Sold Out' ? 'table-status-sold' : 'table-status-available';
       const rowBtn = t('btn_view_details');
 
+      const rowPrice = type === 'plots' ? `<td>${(typeof esc === 'function') ? esc(i.price || '-') : (i.price || '-')}</td>` : '';
       const adminBtns = isAdmin ? `
         <button class="btn-icon btn-edit" style="margin-left:4px;" title="Edit" onclick="event.stopPropagation(); editProperty('${type}','${i.id}')">✏️</button>
         <button class="btn-icon btn-del" style="margin-left:4px;" title="Delete" onclick="event.stopPropagation(); deleteProperty('${type}','${i.id}')">🗑️</button>
       ` : '';
 
       rows += `
-        <tr onclick="navigate('detail/${type}/${i.id}')" style="cursor:pointer">
+        <tr onclick="viewDetailOrAuth('${type}','${i.id}')" style="cursor:pointer">
           <td class="table-id">${rowId}</td>
           <td class="table-title">${rowTitle}</td>
           <td>${rowLocation}</td>
           <td>${rowVillage}</td>
           <td>${rowArea}</td>
-          <td class="table-facing">${rowFacing}</td>
+          ${rowPrice}
+          ${type !== 'plots' ? `<td class="table-facing">${rowFacing}</td>` : ''}
           <td>
             <span class="table-status ${statusClass}">${rowStatus}</span>
           </td>
           <td style="white-space:nowrap;">
-            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); navigate('detail/${type}/${i.id}')">${rowBtn}</button>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); viewDetailOrAuth('${type}','${i.id}');">${rowBtn}</button>
             ${adminBtns}
           </td>
         </tr>`;
@@ -581,7 +616,8 @@ function renderPropertyTable(items, type) {
           <th>${t('table_col_location')}</th>
           <th>${t('table_col_village')}</th>
           <th>${t('table_col_area')}</th>
-          <th>${t('table_col_facing')}</th>
+          ${type === 'plots' ? `<th>Price per sq Yard</th>` : ''}
+          ${type !== 'plots' ? `<th>${t('table_col_facing')}</th>` : ''}
           <th>${t('table_col_status')}</th>
           <th>${t('table_col_action')}</th>
         </tr>
@@ -597,10 +633,11 @@ async function renderListings(type) {
   const labels = {
     plots: { title: t('section_plots'), sub: t('section_plots_desc'), singular: t('nav_plots') },
     flats: { title: t('section_flats'), sub: t('section_flats_desc'), singular: t('nav_flats') },
+    apartments: { title: 'Premium Apartments', sub: 'Find gated community living', singular: 'Apartment' },
     villas: { title: t('section_villas'), sub: t('section_villas_desc'), singular: t('nav_villas') },
     commercial: { title: t('section_commercial'), sub: t('section_commercial_desc'), singular: t('nav_commercial') },
   };
-  const icons = { plots: '🌿', flats: '🏢', villas: '🏡', commercial: '🏙️' };
+  const icons = { plots: '🌿', flats: '🏢', apartments: '🏢', villas: '🏡', commercial: '🏙️' };
   const { title, sub, singular } = labels[type];
 
   const items = await DB[type].get();
@@ -1453,3 +1490,23 @@ window.addEventListener('popstate', e => {
   if (!path) path = 'about';
   loadPage(path);
 });
+
+// ==== Admin Button Shortcut (Ctrl/Cmd + Shift + Y) ====
+document.addEventListener('keydown', (e) => {
+  // Check for Ctrl or Cmd, Shift, and 'Y'/'y'
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.code === 'KeyY') {
+    e.preventDefault(); // Prevent default browser action
+
+    // If a normal Google user is logged in, DO NOT allow revealing the admin button
+    if (window.Auth && Auth.currentUser()) {
+      return; 
+    }
+
+    // Toggle the admin button visibility class
+    const adminBtn = document.getElementById('admin-btn');
+    if (adminBtn) {
+      adminBtn.classList.toggle('show-admin-btn');
+    }
+  }
+});
+

@@ -21,6 +21,7 @@ const db = firebase.firestore();
 const KEYS = {
   plots: "plots",
   flats: "flats",
+  apartments: "apartments",
   villas: "villas",
   commercial: "commercial",
   reviews: "reviews",
@@ -34,6 +35,7 @@ const KEYS = {
 const _dbCache = {
   plots: null,
   flats: null,
+  apartments: null,
   villas: null,
   commercial: null,
   reviews: null,
@@ -74,8 +76,8 @@ async function addItem(collection, item) {
   try {
     item.createdAt = new Date().toISOString();
 
-    // Assign a sequential numerical ID (propId) for properties (plots, flats, villas, commercial)
-    if (["plots", "flats", "villas", "commercial"].includes(collection)) {
+    // Assign a sequential numerical ID (propId) for properties (plots, flats, villas, commercial, apartments)
+    if (["plots", "flats", "apartments", "villas", "commercial"].includes(collection)) {
       const snapshot = await db
         .collection(collection)
         .orderBy("propId", "desc")
@@ -135,6 +137,12 @@ const DB = {
     update: (id, d) => updateItem(KEYS.flats, id, d),
     del: (id) => deleteItem(KEYS.flats, id),
   },
+  apartments: {
+    get: () => getData(KEYS.apartments),
+    add: (d) => addItem(KEYS.apartments, d),
+    update: (id, d) => updateItem(KEYS.apartments, id, d),
+    del: (id) => deleteItem(KEYS.apartments, id),
+  },
   villas: {
     get: () => getData(KEYS.villas),
     add: (d) => addItem(KEYS.villas, d),
@@ -172,6 +180,11 @@ const DB = {
     get: () => getData(KEYS.settings),
     add: (d) => addItem(KEYS.settings, d),
     update: (id, d) => updateItem(KEYS.settings, id, d),
+  },
+  users: {
+    get: () => getData('users'),
+    add: (d) => addItem('users', d),
+    update: (id, d) => updateItem('users', id, d),
   },
 };
 

@@ -61,7 +61,7 @@ function applyAdminUI() {
 
   // Fix: control FAB with inline style here (overrides any stale inline style from loadPage)
   if (fab) {
-    const listingPages = ['plots', 'flats', 'villas'];
+    const listingPages = ['plots', 'flats', 'apartments', 'villas', 'commercial'];
     const currentPage = (location.hash || '#about').replace('#', '');
     fab.style.display = (isAdmin && listingPages.includes(currentPage)) ? 'flex' : 'none';
   }
@@ -274,7 +274,7 @@ function buildFormHtml(type, d = {}) {
       <input class="form-control" id="pf-location" placeholder="e.g. Whitefield, Bangalore" value="${esc(d.location || '')}">
     </div>`;
 
-  const priceAndDesc = `
+  const getPriceAndDesc = (type, d) => `
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Contact Number</label>
@@ -287,8 +287,8 @@ function buildFormHtml(type, d = {}) {
     </div>
     <div class="form-row">
       <div class="form-group" style="flex:1">
-        <label class="form-label">Price *</label>
-        <input class="form-control" id="pf-price" placeholder="e.g. \u20b945 Lakhs" value="${esc(d.price || '')}">
+        <label class="form-label">${type === 'plots' ? 'Price per Sq Yard *' : 'Price *'}</label>
+        <input class="form-control" id="pf-price" placeholder="${type === 'plots' ? 'e.g. \u20b915,000' : 'e.g. \u20b945 Lakhs'}" value="${esc(d.price || '')}">
       </div>
       <div class="form-group" style="flex:1">
         <label class="form-label">Status *</label>
@@ -364,7 +364,7 @@ function buildFormHtml(type, d = {}) {
             </label>
           </div>
         </div>
-      </div>` + priceAndDesc;
+      </div>` + getPriceAndDesc(type, d);
   }
 
   if (type === 'flats') {
@@ -398,7 +398,45 @@ function buildFormHtml(type, d = {}) {
       <div class="form-group">
         <label class="form-label">Amenities</label>
         <input class="form-control" id="pf-amenities" placeholder="e.g. Pool, Gym, Clubhouse" value="${esc(d.amenities || '')}">
-      </div>` + priceAndDesc;
+      </div>` + getPriceAndDesc(type, d);
+  }
+
+  if (type === 'apartments') {
+    return commonTop + `
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Total Acres</label>
+          <input class="form-control" id="pf-acres" placeholder="e.g. 5 Acres" value="${esc(d.acres || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Number of Blocks</label>
+          <input class="form-control" id="pf-blocks" placeholder="e.g. 4 Blocks" value="${esc(d.blocks || '')}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Flat Sizes (BHK)</label>
+          <input class="form-control" id="pf-flatSizes" placeholder="e.g. 2 BHK, 3 BHK" value="${esc(d.flatSizes || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Units</label>
+          <input class="form-control" id="pf-totalUnits" placeholder="e.g. 400 Units" value="${esc(d.totalUnits || '')}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Total Floors</label>
+          <input class="form-control" id="pf-floors" placeholder="e.g. G+15 Floors" value="${esc(d.floors || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Club House Size</label>
+          <input class="form-control" id="pf-clubHouseSize" placeholder="e.g. 20,000 sq ft" value="${esc(d.clubHouseSize || '')}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amenities</label>
+        <input class="form-control" id="pf-amenities" placeholder="e.g. Pool, Gym, Park" value="${esc(d.amenities || '')}">
+      </div>` + getPriceAndDesc(type, d);
   }
 
   if (type === 'villas') {
@@ -431,7 +469,7 @@ function buildFormHtml(type, d = {}) {
             <span class="form-label" style="margin-bottom:0">🌿 Garden / Lawn</span>
           </label>
         </div>
-      </div>` + priceAndDesc;
+      </div>` + getPriceAndDesc(type, d);
   } else if (type === 'commercial') {
     return commonTop + `
       <div class="form-row">
@@ -460,7 +498,7 @@ function buildFormHtml(type, d = {}) {
           ${['Bare Shell', 'Plug & Play', 'Fully Furnished', 'Semi-Furnished']
         .map(fu => `<option ${d.furnishing === fu ? 'selected' : ''}>${fu}</option>`).join('')}
         </select>
-      </div>` + priceAndDesc;
+      </div>` + getPriceAndDesc(type, d);
   }
   return '';
 }
@@ -498,6 +536,9 @@ function collectFormData(type) {
   }
   if (type === 'flats') {
     return { ...base, bhk: g('pf-bhk'), area: g('pf-area'), floor: g('pf-floor'), furnishing: g('pf-furnishing'), amenities: g('pf-amenities') };
+  }
+  if (type === 'apartments') {
+    return { ...base, acres: g('pf-acres'), blocks: g('pf-blocks'), flatSizes: g('pf-flatSizes'), totalUnits: g('pf-totalUnits'), amenities: g('pf-amenities'), floors: g('pf-floors'), clubHouseSize: g('pf-clubHouseSize') };
   }
   if (type === 'villas') {
     return { ...base, bedrooms: g('pf-bedrooms'), landArea: g('pf-landArea'), builtUpArea: g('pf-builtUpArea'), hasPool: gb('pf-hasPool'), hasGarden: gb('pf-hasGarden') };
