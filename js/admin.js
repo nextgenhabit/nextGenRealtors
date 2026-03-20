@@ -302,6 +302,26 @@ function buildFormHtml(type, d = {}) {
       <label class="form-label">Description</label>
       <textarea class="form-control" id="pf-description" maxlength="5000" placeholder="Brief description of the property...">${esc(d.description || '')}</textarea>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Location Advantages <span style="font-weight:400;color:var(--mid-grey)">(optional)</span></label>
+        <textarea class="form-control" id="pf-locationAdvantages" maxlength="2000" placeholder="Nearby schools, hospitals, transport...">${esc(d.locationAdvantages || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Project Highlights <span style="font-weight:400;color:var(--mid-grey)">(optional)</span></label>
+        <textarea class="form-control" id="pf-projectHighlights" maxlength="2000" placeholder="Key features of the project...">${esc(d.projectHighlights || '')}</textarea>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Legal & Investment Benefits <span style="font-weight:400;color:var(--mid-grey)">(optional)</span></label>
+        <textarea class="form-control" id="pf-legalBenefits" maxlength="2000" placeholder="Clear title, high ROI, etc...">${esc(d.legalBenefits || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Investment Potential <span style="font-weight:400;color:var(--mid-grey)">(optional)</span></label>
+        <textarea class="form-control" id="pf-investmentPotential" maxlength="2000" placeholder="Future growth drivers...">${esc(d.investmentPotential || '')}</textarea>
+      </div>
+    </div>
 
     <div class="form-group">
       <label class="form-label">Property Images <span style="color:var(--mid-grey);font-weight:400">(up to 4 photos)</span></label>
@@ -521,6 +541,10 @@ function collectFormData(type) {
     price: g('pf-price'),
     status: g('pf-status') || 'Available',
     description: g('pf-description'),
+    locationAdvantages: g('pf-locationAdvantages'),
+    projectHighlights: g('pf-projectHighlights'),
+    legalBenefits: g('pf-legalBenefits'),
+    investmentPotential: g('pf-investmentPotential'),
     videoUrl: g('pf-videoUrl'),
     images,           // array of up to 4 base64/URL strings
     imageUrl: images[0] || '',   // keep for backward compat with card renderer

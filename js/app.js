@@ -32,6 +32,16 @@ document.addEventListener('click', e => {
 // FAB — stop click from bubbling to overlay close listener
 // (without this, the modal opens and immediately closes)
 document.addEventListener('DOMContentLoaded', () => {
+  // Navigation scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 20) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
   const fab = document.getElementById('admin-fab');
   if (fab) {
     fab.addEventListener('click', e => {
@@ -39,7 +49,67 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window._fabAction === 'function') window._fabAction();
     });
   }
+
+  // Setup observer for dynamic elements once globally
+  setupIntersectionObserver();
 });
+
+function setupIntersectionObserver() {
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.1
+  };
+
+  window._globalObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+        // Handle number counting if it's a stat number
+        if (entry.target.classList.contains('count-up-stat') && !entry.target.dataset.counted) {
+          animateNumber(entry.target);
+          entry.target.dataset.counted = 'true';
+        }
+        observer.unobserve(entry.target); // Optional: only animate once
+      }
+    });
+  }, observerOptions);
+}
+
+// Call this function whenever new content is loaded into the DOM
+window.observeNewElements = function() {
+  if (!window._globalObserver) return;
+  document.querySelectorAll('.fade-up:not(.in-view), .count-up-stat:not([data-counted])').forEach(el => {
+    window._globalObserver.observe(el);
+  });
+};
+
+function animateNumber(element) {
+  const originalText = element.innerText;
+  const target = element.dataset.targetValue ? parseInt(element.dataset.targetValue, 10) : parseInt(originalText.replace(/[^0-9]/g, ''), 10);
+  if (isNaN(target)) return;
+  
+  const hasPlus = originalText.includes('+');
+  
+  const duration = 2000;
+  const frameDuration = 1000 / 60;
+  const totalFrames = Math.round(duration / frameDuration);
+  let frame = 0;
+  
+  const counter = setInterval(() => {
+    frame++;
+    const progress = frame / totalFrames;
+    const easing = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+    const currentCount = Math.round(target * easing);
+    
+    element.innerText = currentCount.toLocaleString() + (hasPlus ? '+' : '');
+    
+    if (frame === totalFrames) {
+      clearInterval(counter);
+      element.innerText = originalText;
+    }
+  }, frameDuration);
+}
 
 
 // ---- Toast ----
@@ -81,7 +151,7 @@ function renderPropertyCard(item, type) {
       ? `<span class="badge" style="background:var(--danger);color:white;margin-left:4px">${t('status_soldout')}</span>`
       : `<span class="badge" style="background:#25D366;color:white;margin-left:4px">${t('status_available')}</span>`}
       </div>
-      <div class="card-price-tag">${esc(item.price)}</div>
+      <div class="card-price-tag">${type === 'plots' ? esc(item.price) + ' <span style="font-size:0.75rem;opacity:0.9;font-weight:500;">/ Sq Yd</span>' : esc(item.price)}</div>
     </div>
     <div class="card-body">
       <h3 class="card-title">${esc(item.title)}</h3>
@@ -213,7 +283,11 @@ async function renderDetail(type, id) {
           ${mapsHtml}
           ${contactHtml}
           <div class="detail-specs-grid" style="margin-top: 24px;">${specsHtml}</div>
-          ${item.description ? `<div class="detail-desc" style="margin-top: 32px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Description</strong><br><br>${esc(item.description)}</div>` : ''}
+          ${item.description ? `<div class="detail-desc" style="margin-top: 32px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Description</strong><br><br>${esc(item.description).split('\n').join('<br>')}</div>` : ''}
+          ${item.locationAdvantages ? `<div class="detail-desc" style="margin-top: 24px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Location Advantages</strong><br><br>${esc(item.locationAdvantages).split('\n').join('<br>')}</div>` : ''}
+          ${item.projectHighlights ? `<div class="detail-desc" style="margin-top: 24px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Project Highlights</strong><br><br>${esc(item.projectHighlights).split('\n').join('<br>')}</div>` : ''}
+          ${item.legalBenefits ? `<div class="detail-desc" style="margin-top: 24px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Legal & Investment Benefits</strong><br><br>${esc(item.legalBenefits).split('\n').join('<br>')}</div>` : ''}
+          ${item.investmentPotential ? `<div class="detail-desc" style="margin-top: 24px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Investment Potential</strong><br><br>${esc(item.investmentPotential).split('\n').join('<br>')}</div>` : ''}
           ${videoHtml}
           ${item.status !== 'Sold Out' ? `
           <div style="margin-top:40px;padding-top:30px;border-top:1px solid var(--light-grey);text-align:center">
@@ -424,20 +498,7 @@ async function renderAbout() {
           <p class="about-title fade-up fade-up-delay-2" id="a-disp-title">${esc(info.title || '')}</p>
           <p class="about-bio fade-up fade-up-delay-3" id="a-disp-bio1">${esc(info.bio1 || '')}</p>
           <p class="about-bio fade-up fade-up-delay-3" id="a-disp-bio2">${esc(info.bio2 || '')}</p>
-          <div class="about-social fade-up fade-up-delay-4">
-            <a href="https://www.facebook.com/nextGenRealtorsHub" target="_blank" class="social-icon" title="Facebook" style="display:inline-flex; align-items:center; justify-content:center;">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z" />
-              </svg>
-            </a>
-            <a href="https://www.instagram.com/nextgenrealtors4/" target="_blank" class="social-icon" title="Instagram">📸</a>
-            <a href="https://www.youtube.com/channel/UC06qF2z-4PF2_9wxP0uuLUA" target="_blank" class="social-icon" title="YouTube">▶️</a>
-            <a href="https://whatsapp.com/channel/0029VbCgeWyAzNbsnw5lZV3O" target="_blank" class="social-icon" title="WhatsApp Channel" style="display:inline-flex; align-items:center; justify-content:center;">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-              </svg>
-            </a>
-          </div>
+
           <div style="display:flex; justify-content:center; gap:12px; align-items:center" class="fade-up fade-up-delay-4">
             <a href="#contact" class="btn btn-primary btn-lg" onclick="navigate('contact')">${t('about_contact_btn')}</a>
             ${adminBtnHtml}
@@ -451,11 +512,11 @@ async function renderAbout() {
   <section style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));padding:0">
     <div class="container">
       <div class="stats-grid stats-grid-4" style="padding:60px 0">
-        <div class="stat-card"><div class="stat-number">${t('about_stats_1_num')}</div><div class="stat-label">${t('about_stats_1_label')}</div></div>
-        <div class="stat-card"><div class="stat-number">${t('about_stats_2_num')}</div><div class="stat-label">${t('about_stats_2_label')}</div></div>
-        <div class="stat-card"><div class="stat-number">${t('about_stats_3_num')}</div><div class="stat-label">${t('about_stats_3_label')}</div></div>
+        <div class="stat-card"><div class="stat-number count-up-stat" data-target-value="${t('about_stats_1_num')}">${t('about_stats_1_num')}</div><div class="stat-label">${t('about_stats_1_label')}</div></div>
+        <div class="stat-card"><div class="stat-number count-up-stat" data-target-value="${t('about_stats_2_num')}">${t('about_stats_2_num')}</div><div class="stat-label">${t('about_stats_2_label')}</div></div>
+        <div class="stat-card"><div class="stat-number count-up-stat" data-target-value="${t('about_stats_3_num')}">${t('about_stats_3_num')}</div><div class="stat-label">${t('about_stats_3_label')}</div></div>
         <div class="stat-card stat-card-users">
-          <div class="stat-number" id="registered-users-count">${registeredUsersCount.toLocaleString()}</div>
+          <div class="stat-number count-up-stat" id="registered-users-count" data-target-value="${registeredUsersCount}">${registeredUsersCount.toLocaleString()}</div>
           <div class="stat-label">👥 Registered Users</div>
         </div>
       </div>
@@ -544,6 +605,8 @@ async function renderAbout() {
       <button class="btn btn-secondary" onclick="navigate('reviews')">${t('about_btn_reviews')}</button>
     </div>
   </section>`;
+
+  if (window.observeNewElements) window.observeNewElements();
 }
 
 // Logic for generating the area column value
@@ -807,6 +870,8 @@ async function filterAndSortListings(type, resetPage = false) {
       }
     }
   }
+  
+  if (window.observeNewElements) window.observeNewElements();
 }
 
 function changeListingPage(type, direction) {
@@ -1361,7 +1426,7 @@ async function renderContact() {
             <label class="form-label">Message *</label>
             <textarea class="form-control" id="cf-message" placeholder="Tell me more about what you're looking for..."></textarea>
           </div>
-          <button class="btn btn-primary btn-lg" onclick="submitContactForm()">📨 Send Message</button>
+          <button class="btn btn-primary btn-lg" onclick="submitContactForm(this)">📨 Send Message</button>
         </div>
       </div>
 
@@ -1380,20 +1445,61 @@ async function renderContact() {
   </section>`;
 }
 
-function submitContactForm() {
+async function submitContactForm(btn) {
   const name = document.getElementById('cf-name')?.value.trim();
   const phone = document.getElementById('cf-phone')?.value.trim();
+  const email = document.getElementById('cf-email')?.value.trim();
+  const interest = document.getElementById('cf-interest')?.value.trim();
   const message = document.getElementById('cf-message')?.value.trim();
 
   if (!name) { showToast('Please enter your name.', 'error'); return; }
   if (!phone) { showToast('Please enter your phone number.', 'error'); return; }
   if (!message) { showToast('Please write a message.', 'error'); return; }
 
-  showToast('✅ Message sent! We\'ll contact you soon.', 'success');
-  ['cf-name', 'cf-phone', 'cf-email', 'cf-interest', 'cf-message'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
+  // Extract admin email dynamically from the UI
+  const adminEmail = document.getElementById('c-disp-email')?.textContent.trim();
+  if (!adminEmail) {
+    showToast('Action failed: No admin email configured.', 'error');
+    return;
+  }
+
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = `<span class="auth-spinner" style="border-width:2px; width:16px; height:16px; margin-right:8px; vertical-align:middle;"></span> Sending...`;
+
+  try {
+    const response = await fetch(`https://formsubmit.co/ajax/${adminEmail}`, {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        _subject: `New Lead: ${interest ? interest : 'General Inquiry'} from ${name}`,
+        Name: name,
+        Phone: phone,
+        Email: email || 'Not provided',
+        Interest: interest || 'Not selected',
+        Message: message
+      })
+    });
+
+    if (response.ok) {
+      showToast('✅ Message sent successfully! We\'ll contact you soon.', 'success');
+      ['cf-name', 'cf-phone', 'cf-email', 'cf-interest', 'cf-message'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+    } else {
+      throw new Error("HTTP error " + response.status);
+    }
+  } catch (err) {
+    console.error("FormSubmit Error:", err);
+    showToast('❌ Failed to send message. Please try again or message via WhatsApp.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
 }
 
 // ---- Agent Photo Upload (About Me page, admin only) ----

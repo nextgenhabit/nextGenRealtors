@@ -1,6 +1,7 @@
 const hi = {
     // Navigation
     "nav_about": "हमारे बारे में",
+    "nav_projects": "प्रोजेक्ट्स",
     "nav_plots": "प्लॉट",
     "nav_flats": "फ्लैट",
     "nav_apartments": "अपार्टमेंट्स",
