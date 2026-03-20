@@ -1426,6 +1426,8 @@ async function renderContact() {
             <label class="form-label">Message *</label>
             <textarea class="form-control" id="cf-message" placeholder="Tell me more about what you're looking for..."></textarea>
           </div>
+          <!-- Anti-bot honeypot: hidden from real users, filled only by bots -->
+          <input type="text" id="cf-website" name="website" autocomplete="new-password" style="position:absolute;left:-9999px;visibility:hidden;" tabindex="-1">
           <button class="btn btn-primary btn-lg" onclick="submitContactForm(this)">📨 Send Message</button>
         </div>
       </div>
@@ -1446,6 +1448,14 @@ async function renderContact() {
 }
 
 async function submitContactForm(btn) {
+  // Honeypot check: bots fill this hidden field, humans don't see it
+  const honeypot = document.getElementById('cf-website')?.value;
+  if (honeypot) {
+    // Silently do nothing — this is a bot
+    console.log('[Security] Bot submission detected and blocked.');
+    return;
+  }
+
   const name = document.getElementById('cf-name')?.value.trim();
   const phone = document.getElementById('cf-phone')?.value.trim();
   const email = document.getElementById('cf-email')?.value.trim();

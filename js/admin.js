@@ -3,6 +3,50 @@
    Default password: admin123
    ========================================================= */
 
+/* ---- Security: SHA-256 helper (non-reversible, unlike btoa) ---- */
+async function sha256(text) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* Migrate a legacy btoa hash to sha256 if needed */
+async function _migrateLegacyHash(plaintext, storedHash) {
+  // Check if stored hash looks like btoa (valid base64, not a 64-char hex string)
+  if (storedHash && storedHash.length !== 64) {
+    // It might be btoa — compare and migrate
+    if (btoa(plaintext) === storedHash) return true; // password matches legacy hash
+  }
+  return false;
+}
+
+/* ---- Brute-Force Protection ---- */
+const _loginState = {
+  attempts: 0,
+  lockUntil: 0,
+  maxAttempts: 5,
+  lockDurationMs: 2 * 60 * 1000 // 2 minutes
+};
+
+function _isLockedOut() {
+  if (_loginState.lockUntil && Date.now() < _loginState.lockUntil) return true;
+  if (_loginState.lockUntil && Date.now() >= _loginState.lockUntil) {
+    // Lock expired, reset
+    _loginState.attempts = 0;
+    _loginState.lockUntil = 0;
+  }
+  return false;
+}
+
+function _getLockoutMessage() {
+  const remaining = Math.ceil((_loginState.lockUntil - Date.now()) / 1000);
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  return `Too many failed attempts. Try again in ${mins}m ${secs}s.`;
+}
+
 const Admin = {
   isLoggedIn() {
     try { return sessionStorage.getItem('re_admin') === 'true'; }
@@ -15,9 +59,9 @@ const Admin = {
     if (!authDoc) {
       const defaultAuth = {
         type: 'admin_auth',
-        passwordHash: btoa('admin123'),
+        passwordHash: await sha256('admin123'),
         sqQuestion: 'What is the name of your first pet?',
-        sqAnswerHash: btoa('fluffy'.toLowerCase().trim())
+        sqAnswerHash: await sha256('fluffy')
       };
       const added = await DB.settings.add(defaultAuth);
       authDoc = { id: added.id, ...defaultAuth };
@@ -26,16 +70,37 @@ const Admin = {
   },
 
   async login(pw) {
+    // Brute-force check
+    if (_isLockedOut()) return { success: false, locked: true };
     try {
       const authDoc = await this.getAuthDoc();
-      if (btoa(pw) === authDoc.passwordHash) {
+      const pwHash = await sha256(pw);
+      let matched = (pwHash === authDoc.passwordHash);
+
+      // Auto-migrate legacy btoa hash → sha256 on successful match
+      if (!matched) {
+        const legacyMatch = await _migrateLegacyHash(pw, authDoc.passwordHash);
+        if (legacyMatch) {
+          // Upgrade hash in Firestore to sha256 silently
+          await DB.settings.update(authDoc.id, { passwordHash: pwHash });
+          matched = true;
+        }
+      }
+
+      if (matched) {
+        _loginState.attempts = 0;
+        _loginState.lockUntil = 0;
         try { sessionStorage.setItem('re_admin', 'true'); } catch (e) { }
-        return true;
+        return { success: true };
       }
     } catch (err) {
       console.error('Login error:', err);
     }
-    return false;
+    _loginState.attempts++;
+    if (_loginState.attempts >= _loginState.maxAttempts) {
+      _loginState.lockUntil = Date.now() + _loginState.lockDurationMs;
+    }
+    return { success: false, locked: false };
   },
 
   logout() {
@@ -97,22 +162,34 @@ async function handleAdminLogin() {
 
   if (!pw) { err.textContent = 'Please enter a password.'; return; }
 
+  // Check lockout before making any request
+  if (_isLockedOut()) {
+    err.textContent = _getLockoutMessage();
+    return;
+  }
+
   if (btn) btn.disabled = true;
   if (window.showToast) showToast('Verifying...', 'info');
 
-  const success = await Admin.login(pw);
+  const result = await Admin.login(pw);
 
   if (btn) btn.disabled = false;
 
-  if (success) {
+  if (result.success) {
     closeModal('admin-login-modal');
     document.getElementById('admin-pw-input').value = '';
     err.textContent = '';
     applyAdminUI();
     showToast('✅ Admin mode activated!', 'success');
     if (window._currentPage) window._currentPage();
+  } else if (result.locked) {
+    err.textContent = _getLockoutMessage();
+    document.getElementById('admin-pw-input').value = '';
   } else {
-    err.textContent = 'Incorrect password. Please try again.';
+    const remaining = _loginState.maxAttempts - _loginState.attempts;
+    err.textContent = remaining > 0
+      ? `Incorrect password. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining.`
+      : _getLockoutMessage();
     document.getElementById('admin-pw-input').value = '';
     document.getElementById('admin-pw-input').focus();
   }
@@ -146,16 +223,21 @@ async function submitChangePassword() {
 
   try {
     const authDoc = await Admin.getAuthDoc();
-    if (btoa(currentPw) !== authDoc.passwordHash) {
+    const currentHash = await sha256(currentPw);
+    // Also support legacy btoa migration
+    const isCorrect = (currentHash === authDoc.passwordHash) ||
+      await _migrateLegacyHash(currentPw, authDoc.passwordHash);
+
+    if (!isCorrect) {
       err.textContent = 'Current password is incorrect.';
       btn.disabled = false;
       return;
     }
 
     await DB.settings.update(authDoc.id, {
-      passwordHash: btoa(newPw),
+      passwordHash: await sha256(newPw),
       sqQuestion: sq,
-      sqAnswerHash: btoa(sa)
+      sqAnswerHash: await sha256(sa)
     });
 
     closeModal('admin-change-pw-modal');
@@ -190,8 +272,11 @@ async function verifySecurityAnswer() {
   if (!ans) { err.textContent = 'Please enter an answer.'; return; }
 
   const authDoc = await Admin.getAuthDoc();
-  if (btoa(ans) === authDoc.sqAnswerHash) {
-    // Correct
+  const ansHash = await sha256(ans);
+  const isCorrect = (ansHash === authDoc.sqAnswerHash) ||
+    await _migrateLegacyHash(ans, authDoc.sqAnswerHash);
+
+  if (isCorrect) {
     document.getElementById('forgot-pw-step-1').style.display = 'none';
     document.getElementById('forgot-pw-footer-1').style.display = 'none';
     document.getElementById('forgot-pw-step-2').style.display = 'block';
@@ -215,7 +300,7 @@ async function submitResetPassword() {
   try {
     const authDoc = await Admin.getAuthDoc();
     await DB.settings.update(authDoc.id, {
-      passwordHash: btoa(newPw)
+      passwordHash: await sha256(newPw)
     });
 
     closeModal('admin-forgot-pw-modal');

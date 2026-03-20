@@ -1768,6 +1768,45 @@ textarea.form-control {
     gap: 12px;
   }
 
+  /* Override dark text to white inside the dark mobile menu */
+  .nav-links.mobile-open a {
+    color: var(--white);
+  }
+
+  .nav-links.mobile-open a.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold); /* highlight indicator */
+  }
+
+  /* Override social icons from dark blue to white inside the mobile menu */
+  .nav-links.mobile-open .nav-social-links a.social-icon {
+    color: var(--white) !important;
+  }
+
+  .nav-links.mobile-open .nav-social-links a.social-icon:hover {
+    color: var(--gold) !important;
+  }
+
+  /* Fix Projects dropdown items inside the dark mobile menu */
+  .nav-links.mobile-open .dropdown-menu {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding-left: 16px;
+  }
+
+  .nav-links.mobile-open .dropdown-menu a {
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: transparent;
+    padding: 8px 0;
+  }
+
+  .nav-links.mobile-open .dropdown-menu a:hover,
+  .nav-links.mobile-open .dropdown-menu a.active {
+    color: var(--gold) !important;
+    background: transparent;
+  }
+
   .about-hero-grid {
     grid-template-columns: 1fr;
     text-align: center;
@@ -1797,6 +1836,15 @@ textarea.form-control {
 }
 
 @media (max-width: 600px) {
+  /* Header UI crunch fixes */
+  .nav-inner { padding: 0 16px; }
+  .nav-logo-name { font-size: 1.3rem; }
+  .nav-logo-tagline { display: none; }
+  .nav-right { gap: 6px; }
+  .lang-btn { width: 24px; height: 24px; font-size: 0.75rem; }
+  .user-nav-btn { padding: 2px 6px 2px 2px; gap: 4px; }
+  .user-avatar-initials, .user-avatar-img { width: 26px; height: 26px; font-size: 0.75rem; }
+
   .section {
     padding: 60px 0;
   }
