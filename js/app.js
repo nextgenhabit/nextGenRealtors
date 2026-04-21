@@ -1711,14 +1711,13 @@ function mpDrawUI() {
           + '<button style="font-size:0.8rem;background:transparent;padding:0;border:none;cursor:pointer;" onclick="deleteProperty(\'miniposts\',\'' + p.id + '\')" title="Delete">🗑️</button>';
       }
 
-      const titleHtml = p.title ? '<div style="font-weight:bold;font-size:1rem;color:var(--navy);margin-bottom:8px;">' + _mpSafeText(p.title) + '</div>' : '';
+      const cardTitle = p.title ? _mpSafeText(p.title) : _mpSafeText(p.area);
 
       return '<div class="fade-up" style="background:white;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.04);display:flex;flex-direction:column;">'
         + '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;">'
-        + '<strong style="color:var(--navy);font-size:1rem;">📍 ' + _mpSafeText(p.area) + '</strong>'
+        + '<strong style="color:var(--navy);font-size:1.05rem;">' + cardTitle + '</strong>'
         + '<div style="display:flex;gap:4px;">' + adminBtns + '</div>'
         + '</div>'
-        + titleHtml
         + '<div id="mp-detail-' + p.id + '" style="font-size:0.85rem;color:var(--dark-grey);line-height:1.6;flex:1;margin-bottom:12px;overflow-wrap:anywhere;">' + baseLang + '</div>'
         + translateHtml
         + '</div>';
