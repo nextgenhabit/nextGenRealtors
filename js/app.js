@@ -1613,8 +1613,7 @@ function mpDrawUI() {
   if (!content) return;
 
   const allPosts = window._mpRawData || [];
-  const cats = ['House for Sale', 'Land for Sale', 'Plot for Sale', 'To-let'];
-  const MP_CATS = cats;
+  const MP_CATS = ['House for Sale', 'Land for Sale', 'Plot for Sale', 'To-let'];
 
   if (!MP_CATS.includes(window._activeMinipostCat)) window._activeMinipostCat = MP_CATS[0];
 
@@ -1622,19 +1621,23 @@ function mpDrawUI() {
   const uniqueAreas = [];
   const seenAreas = {};
   filtered.forEach(function(p) {
-    if (p.area && !seenAreas[p.area]) { seenAreas[p.area] = true; uniqueAreas.push(p.area); }
+    const a = (p.area || '').trim();
+    if (a && !seenAreas[a]) { seenAreas[a] = true; uniqueAreas.push(a); }
   });
 
   window._mpAreaMap = uniqueAreas;
 
-  if (!window._activeMinipostArea || uniqueAreas.indexOf(window._activeMinipostArea) === -1) {
+  const currentAreaTrimmed = (window._activeMinipostArea || '').trim();
+  if (!currentAreaTrimmed || uniqueAreas.indexOf(currentAreaTrimmed) === -1) {
     window._activeMinipostArea = uniqueAreas.length > 0 ? uniqueAreas[0] : null;
     window._mpPage = 1;
+  } else {
+    window._activeMinipostArea = currentAreaTrimmed;
   }
   if (!window._mpPage) window._mpPage = 1;
 
   const activePosts = window._activeMinipostArea
-    ? filtered.filter(function(p) { return p.area === window._activeMinipostArea; })
+    ? filtered.filter(function(p) { return (p.area || '').trim() === window._activeMinipostArea; })
     : [];
 
   const ITEMS_PER_PAGE = 60;
@@ -1734,6 +1737,8 @@ function mpDrawUI() {
     + '<div class="mp-grid">' + postsHtml + '</div>'
     + pageHtml
     + '</div></section>';
+
+  if (window.observeNewElements) window.observeNewElements();
 }
 
 function mpSelectCat(cat) {
