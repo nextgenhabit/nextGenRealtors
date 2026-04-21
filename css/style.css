@@ -793,6 +793,16 @@ button {
   display: flex;
 }
 
+/* Hide user sign-in button when admin is logged in */
+.admin-mode #nav-signin-btn,
+.admin-mode .btn-signin-nav {
+  display: none !important;
+}
+
+.admin-mode .admin-only {
+  display: block !important;
+}
+
 .btn-edit {
   background: rgba(201, 168, 76, 0.1);
   color: var(--gold-dark);

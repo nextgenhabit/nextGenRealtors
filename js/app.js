@@ -255,6 +255,12 @@ async function renderDetail(type, id) {
        </div>`
     : '';
 
+  const companyLogoHtml = item.companyLogoUrl 
+    ? `<div style="text-align:center; padding:16px; margin-bottom:24px; background:var(--off-white); border-radius:12px;">
+         <img src="${esc(item.companyLogoUrl)}" alt="Company Logo" style="max-height:80px; width:auto; object-fit:contain;">
+       </div>`
+    : '';
+
   content.innerHTML = `
   <div class="hero">
     <div class="container" style="position:relative;z-index:1">
@@ -270,6 +276,7 @@ async function renderDetail(type, id) {
           ${galleryHtml}
         </div>
         <div class="detail-right-col">
+          ${companyLogoHtml}
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <div class="detail-modal-price" style="margin-bottom:0; font-size: 2rem; color: var(--gold); font-weight: 700;">${esc(item.price)}</div>
             ${item.status === 'Sold Out'
@@ -398,6 +405,15 @@ const pages = {
   apartments: () => renderListings('apartments'),
   villas: () => renderListings('villas'),
   commercial: () => renderListings('commercial'),
+  miniposts: () => {
+    if (typeof Auth !== 'undefined') {
+      // Temporarily write a loading state so the background isn't blank
+      document.getElementById('page-content').innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div><p>Verifying access...</p></div>';
+      Auth.requireAuth(() => renderMiniPosts());
+    } else {
+      renderMiniPosts();
+    }
+  },
   reviews: renderReviews,
   subscribe: renderSubscribe,
   contact: renderContact,
@@ -456,6 +472,13 @@ async function renderAbout() {
     console.error('Failed to fetch user count', e);
   }
 
+  let clientsData = [];
+  try {
+    clientsData = await DB.clients.get();
+  } catch (e) {
+    console.error('Failed to fetch clients', e);
+  }
+
   const defaultAbout = {
     name: 'NextGen Realtors',
     tagline: 'Your Trusted Guide',
@@ -493,7 +516,7 @@ async function renderAbout() {
       <div class="about-hero-grid">
         <div class="agent-photo-wrap" style="display:none;"></div>
         <div class="about-hero-content">
-          <p class="hero-eyebrow fade-up fade-up-delay-1">${t('about_hero_eyebrow')}</p>
+
           <h1 class="about-name fade-up fade-up-delay-2"><span id="a-disp-name">${esc(info.name || '')}</span><br><em id="a-disp-tagline">${esc(info.tagline || '')}</em></h1>
           <p class="about-title fade-up fade-up-delay-2" id="a-disp-title">${esc(info.title || '')}</p>
           <p class="about-bio fade-up fade-up-delay-3" id="a-disp-bio1">${esc(info.bio1 || '')}</p>
@@ -587,6 +610,30 @@ async function renderAbout() {
       </div>
     </div>
   </section>
+
+  <!-- Our Clients -->
+  <section class="section" style="background:var(--off-white); text-align:center;">
+    <div class="container">
+      <p class="hero-eyebrow" style="color:#FCA140;">ASSOCIATIONS</p>
+      <h2 style="color:var(--navy);margin-bottom:8px;">Proudly Collaborating With</h2>
+      <p style="color:var(--dark-grey);margin-bottom:32px;">Driving success through trusted partnerships and exceptional service.</p>
+      
+      ${Admin.isLoggedIn() ? `<div style="text-align:right; margin-bottom: 20px;"><button class="btn btn-primary btn-sm" onclick="showPropertyForm('clients')">➕ Add Client</button></div>` : ''}
+      
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
+        ${clientsData.map(c => `
+          <div class="fade-up" style="display:flex; flex-direction:column; align-items:center; width: 140px;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background:var(--white); box-shadow:0 10px 20px rgba(0,0,0,0.05); margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
+              ${c.imageUrl ? `<img src="${esc(c.imageUrl)}" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : '<span style="font-size:2rem;">🤝</span>'}
+            </div>
+            <p style="font-weight:600; color:var(--navy); font-size:0.95rem; text-align:center; word-break:break-word;">${esc(c.title)}</p>
+            ${Admin.isLoggedIn() ? `<div style="display:flex; gap:4px; margin-top:8px;"><button class="btn-icon " style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Edit" onclick="editProperty('clients','${c.id}')">✏️</button><button class="btn-icon" style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Delete" onclick="deleteProperty('clients','${c.id}')">🗑️</button></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </section>
+
   <style>
     .mv-row { display: grid; gap: 40px; align-items: center; }
     @media (min-width: 768px) {
@@ -1556,6 +1603,182 @@ function toggleMobileNav() {
 }
 
 // ---- Global Settings (Logo) ----
+// ========= MINI POSTS — standalone global helpers =========
+function _mpSafeText(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function mpDrawUI() {
+  const content = document.getElementById('page-content');
+  if (!content) return;
+
+  const allPosts = window._mpRawData || [];
+  const cats = ['House for Sale', 'Land for Sale', 'Plot for Sale', 'To-let'];
+  const MP_CATS = cats;
+
+  if (!MP_CATS.includes(window._activeMinipostCat)) window._activeMinipostCat = MP_CATS[0];
+
+  const filtered = allPosts.filter(function(p) { return p.category === window._activeMinipostCat; });
+  const uniqueAreas = [];
+  const seenAreas = {};
+  filtered.forEach(function(p) {
+    if (p.area && !seenAreas[p.area]) { seenAreas[p.area] = true; uniqueAreas.push(p.area); }
+  });
+
+  window._mpAreaMap = uniqueAreas;
+
+  if (!window._activeMinipostArea || uniqueAreas.indexOf(window._activeMinipostArea) === -1) {
+    window._activeMinipostArea = uniqueAreas.length > 0 ? uniqueAreas[0] : null;
+    window._mpPage = 1;
+  }
+  if (!window._mpPage) window._mpPage = 1;
+
+  const activePosts = window._activeMinipostArea
+    ? filtered.filter(function(p) { return p.area === window._activeMinipostArea; })
+    : [];
+
+  const ITEMS_PER_PAGE = 60;
+  const totalPages = Math.max(1, Math.ceil(activePosts.length / ITEMS_PER_PAGE));
+  if (window._mpPage > totalPages) window._mpPage = totalPages;
+  const start = (window._mpPage - 1) * ITEMS_PER_PAGE;
+  const paginatedPosts = activePosts.slice(start, start + ITEMS_PER_PAGE);
+
+  const catHtml = MP_CATS.map(function(c) {
+    const active = window._activeMinipostCat === c;
+    return '<button class="btn' + (active ? ' btn-primary' : '') + '"'
+      + ' onclick="mpSelectCat(\'' + c + '\')"'
+      + ' style="margin:4px;' + (active ? '' : 'background:white;color:var(--navy);border:1.5px solid var(--light-grey);') + '">'
+      + c + '</button>';
+  }).join('');
+
+  var areaHtml;
+  if (uniqueAreas.length === 0) {
+    areaHtml = '<p style="color:var(--mid-grey);margin-top:20px;">No areas listed for this category yet.</p>';
+  } else {
+    areaHtml = uniqueAreas.map(function(a) {
+      const active = window._activeMinipostArea === a;
+      const encoded = encodeURIComponent(a);
+      return '<button class="btn' + (active ? ' btn-primary' : '') + '"'
+        + ' onclick="mpSelectAreaByName(decodeURIComponent(\'' + encoded + '\'))"'
+        + ' style="margin:4px;border-radius:20px;padding:4px 16px;font-size:0.9rem;'
+        + (active ? '' : 'background:var(--off-white);color:var(--navy);border:1.5px solid var(--light-grey);') + '">'
+        + _mpSafeText(a) + '</button>';
+    }).join('');
+  }
+
+  var pageHtml = '';
+  if (totalPages > 1) {
+    var btns = '';
+    for (var pi = 1; pi <= totalPages; pi++) {
+      const active = window._mpPage === pi;
+      btns += '<button class="btn' + (active ? ' btn-primary' : '') + '"'
+        + ' onclick="mpSelectPage(' + pi + ')"'
+        + ' style="border-radius:50%;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;'
+        + (active ? '' : 'background:white;color:var(--navy);border:1.5px solid var(--light-grey);') + '">'
+        + pi + '</button>';
+    }
+    pageHtml = '<div style="margin-top:40px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;">' + btns + '</div>';
+  }
+
+  var postsHtml = '';
+  if (paginatedPosts.length === 0 && uniqueAreas.length > 0) {
+    postsHtml = '<p style="color:var(--mid-grey);padding:40px 0;">No details found for this area.</p>';
+  } else {
+    postsHtml = paginatedPosts.map(function(p) {
+      const dEN = _mpSafeText(p.detailsEn || '').replace(/\r?\n/g,'<br>');
+      const dHI = _mpSafeText(p.detailsHi || '').replace(/\r?\n/g,'<br>');
+      const dTE = _mpSafeText(p.detailsTe || '').replace(/\r?\n/g,'<br>');
+      const baseLang = dEN || dHI || dTE;
+      const langCount = (p.detailsEn ? 1 : 0) + (p.detailsHi ? 1 : 0) + (p.detailsTe ? 1 : 0);
+      const isAdmin = (typeof Admin !== 'undefined' && Admin.isLoggedIn());
+
+      var translateHtml = '';
+      if (langCount > 1) {
+        translateHtml = '<div style="display:flex;gap:6px;border-top:1px dashed #eee;padding-top:10px;margin-top:auto;align-items:center;">'
+          + '<span style="font-size:0.75rem;color:var(--mid-grey);margin-right:auto;">Translate:</span>'
+          + (p.detailsEn ? '<button class="btn btn-sm" style="padding:2px 8px;font-size:0.75rem;background:var(--off-white);color:var(--navy);border:1px solid var(--light-grey);" onclick="(function(){document.getElementById(\'mp-detail-' + p.id + '\').innerHTML=\'' + dEN.replace(/'/g,'\\&#39;') + '\';})()">EN</button>' : '')
+          + (p.detailsHi ? '<button class="btn btn-sm" style="padding:2px 8px;font-size:0.75rem;background:var(--off-white);color:var(--navy);border:1px solid var(--light-grey);" onclick="(function(){document.getElementById(\'mp-detail-' + p.id + '\').innerHTML=\'' + dHI.replace(/'/g,'\\&#39;') + '\';})()">HI</button>' : '')
+          + (p.detailsTe ? '<button class="btn btn-sm" style="padding:2px 8px;font-size:0.75rem;background:var(--off-white);color:var(--navy);border:1px solid var(--light-grey);" onclick="(function(){document.getElementById(\'mp-detail-' + p.id + '\').innerHTML=\'' + dTE.replace(/'/g,'\\&#39;') + '\';})()">TE</button>' : '')
+          + '</div>';
+      }
+
+      var adminBtns = '';
+      if (isAdmin) {
+        adminBtns = '<button style="font-size:0.8rem;background:transparent;padding:0;border:none;cursor:pointer;" onclick="editProperty(\'miniposts\',\'' + p.id + '\')" title="Edit">✏️</button>'
+          + '<button style="font-size:0.8rem;background:transparent;padding:0;border:none;cursor:pointer;" onclick="deleteProperty(\'miniposts\',\'' + p.id + '\')" title="Delete">🗑️</button>';
+      }
+
+      return '<div class="fade-up" style="background:white;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.04);display:flex;flex-direction:column;">'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;">'
+        + '<strong style="color:var(--navy);font-size:1rem;">📍 ' + _mpSafeText(p.area) + '</strong>'
+        + '<div style="display:flex;gap:4px;">' + adminBtns + '</div>'
+        + '</div>'
+        + '<div id="mp-detail-' + p.id + '" style="font-size:0.85rem;color:var(--dark-grey);line-height:1.6;flex:1;margin-bottom:12px;overflow-wrap:anywhere;">' + baseLang + '</div>'
+        + translateHtml
+        + '</div>';
+    }).join('');
+  }
+
+  const isAdmin = (typeof Admin !== 'undefined' && Admin.isLoggedIn());
+  content.innerHTML = '<div class="hero"><div class="container" style="position:relative;z-index:1">'
+    + '<p class="hero-eyebrow">PREMIUM SECURE ACCESS</p><h1>Mini Posts</h1></div></div>'
+    + '<section class="section" style="background:var(--off-white);min-height:80vh;text-align:center;">'
+    + '<div class="container" style="max-width:1200px;">'
+    + (isAdmin ? '<div style="text-align:right;margin-bottom:20px;"><button class="btn btn-primary btn-sm" onclick="showPropertyForm(\'miniposts\')">➕ Add Mini Post</button></div>' : '')
+    + '<div style="margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">' + catHtml + '</div>'
+    + '<div style="background:white;border-radius:12px;padding:16px;margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(0,0,0,0.03);">' + areaHtml + '</div>'
+    + '<style>.mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:left;}'
+    + '@media(max-width:1024px){.mp-grid{grid-template-columns:repeat(3,1fr);}}'
+    + '@media(max-width:768px){.mp-grid{grid-template-columns:repeat(2,1fr);}}'
+    + '@media(max-width:480px){.mp-grid{grid-template-columns:1fr;}}</style>'
+    + '<div class="mp-grid">' + postsHtml + '</div>'
+    + pageHtml
+    + '</div></section>';
+}
+
+function mpSelectCat(cat) {
+  window._activeMinipostCat = cat;
+  window._activeMinipostArea = null;
+  window._mpPage = 1;
+  mpDrawUI();
+}
+
+function mpSelectAreaByName(areaName) {
+  window._activeMinipostArea = areaName;
+  window._mpPage = 1;
+  mpDrawUI();
+}
+
+// Keep old function as alias in case it's called anywhere
+function mpSelectArea(idx) {
+  var map = window._mpAreaMap;
+  if (map && idx >= 0 && idx < map.length) {
+    mpSelectAreaByName(map[idx]);
+  }
+}
+
+function mpSelectPage(page) {
+  window._mpPage = page;
+  mpDrawUI();
+}
+
+async function renderMiniPosts() {
+  const content = document.getElementById('page-content');
+  content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div><p>Securely fetching posts...</p></div>';
+  try {
+    window._mpRawData = await DB.miniposts.get();
+    // Reset area when page freshly loads
+    window._activeMinipostArea = null;
+    window._mpPage = 1;
+    if (!window._activeMinipostCat) window._activeMinipostCat = 'House for Sale';
+    mpDrawUI();
+    if (window.observeNewElements) window.observeNewElements();
+  } catch(e) {
+    console.error(e);
+    content.innerHTML = '<div style="padding:100px;text-align:center"><p style="color:red">Failed to load miniposts.</p></div>';
+  }
+}
+
 async function loadGlobalSettings() {
   try {
     const settings = await DB.about.get();

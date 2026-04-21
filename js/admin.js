@@ -341,6 +341,17 @@ function showPropertyForm(type, editItem = null) {
 function buildFormHtml(type, d = {}) {
   const commonTop = `
     <div class="form-group">
+      <label class="form-label">Company Logo <span style="font-weight:400;color:var(--mid-grey)">(optional)</span></label>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <label class="btn btn-ghost" for="pf-company-logo-input" style="cursor:pointer;border-color:var(--light-grey)">
+          📁 Browse Logo
+          <input type="file" id="pf-company-logo-input" accept="image/*" style="display:none" onchange="handleCompanyLogoUpload(event)">
+        </label>
+        <img id="pf-company-logo-preview" style="${d.companyLogoUrl ? 'display:block' : 'display:none'};width:80px;height:40px;object-fit:contain;border-radius:4px;border:1px solid var(--light-grey)" src="${esc(d.companyLogoUrl || '')}">
+        <input type="hidden" id="pf-company-logo-hidden" value="${esc(d.companyLogoUrl || '')}">
+      </div>
+    </div>
+    <div class="form-group">
       <label class="form-label">Title *</label>
       <input class="form-control" id="pf-title" placeholder="e.g. Prime Plot in Koramangala" value="${esc(d.title || '')}">
     </div>
@@ -604,6 +615,55 @@ function buildFormHtml(type, d = {}) {
         .map(fu => `<option ${d.furnishing === fu ? 'selected' : ''}>${fu}</option>`).join('')}
         </select>
       </div>` + getPriceAndDesc(type, d);
+  } else if (type === 'clients') {
+    return `
+      <div class="form-group">
+        <label class="form-label">Client Name *</label>
+        <input class="form-control" id="pf-title" placeholder="e.g. Acme Corp" value="${esc(d.title || '')}">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Client Logo <span style="color:var(--mid-grey);font-weight:400">(Upload 1 logo)</span></label>
+        <div class="img-upload-area" id="pf-drop-zone">
+          <div class="img-preview-grid" id="pf-image-grid"></div>
+          <label class="img-browse-btn" for="pf-image-input">
+            <span>📁 Browse Image</span>
+            <input type="file" id="pf-image-input" accept="image/*"
+              style="position:absolute;width:0;height:0;opacity:0"
+              onchange="handleImageUpload(event)">
+          </label>
+        </div>
+      </div>
+      </div>
+    `;
+  } else if (type === 'miniposts') {
+    return `
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-control" id="pf-category">
+            ${['House for Sale', 'Land for Sale', 'Plot for Sale', 'To-let']
+        .map(c => `<option ${d.category === c ? 'selected' : ''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Area *</label>
+          <input class="form-control" id="pf-area" placeholder="e.g. Gachibowli, Tellapur..." value="${esc(d.area || '')}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Details (English) *</label>
+        <textarea class="form-control" id="pf-detailsEn" rows="6" placeholder="Maximum 7 lines of details here...">${esc(d.detailsEn || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Details (Hindi)</label>
+        <textarea class="form-control" id="pf-detailsHi" rows="6" placeholder="Optional Hindi translation...">${esc(d.detailsHi || '')}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Details (Telugu)</label>
+        <textarea class="form-control" id="pf-detailsTe" rows="6" placeholder="Optional Telugu translation...">${esc(d.detailsTe || '')}</textarea>
+      </div>
+    `;
   }
   return '';
 }
@@ -615,8 +675,12 @@ function collectFormData(type) {
   // Collect base64 images from preview grid
   const imgEls = document.querySelectorAll('#pf-image-grid .img-thumb');
   const images = Array.from(imgEls).map(img => img.src).filter(Boolean);
+  
+  const logoHidden = document.getElementById('pf-company-logo-hidden');
+  const companyLogoUrl = logoHidden ? logoHidden.value : '';
 
   const base = {
+    companyLogoUrl,
     title: g('pf-title'),
     location: g('pf-location'),
     district: g('pf-district'),
@@ -655,6 +719,22 @@ function collectFormData(type) {
   if (type === 'commercial') {
     return { ...base, area: g('pf-area'), floor: g('pf-floor'), washrooms: g('pf-washrooms'), parking: g('pf-parking'), furnishing: g('pf-furnishing') };
   }
+  if (type === 'clients') {
+    return {
+      title: g('pf-title'),
+      images,
+      imageUrl: images[0] || '',
+    };
+  }
+  if (type === 'miniposts') {
+    return {
+      category: g('pf-category'),
+      area: g('pf-area'),
+      detailsEn: g('pf-detailsEn'),
+      detailsHi: g('pf-detailsHi'),
+      detailsTe: g('pf-detailsTe')
+    };
+  }
 }
 
 async function submitPropertyForm() {
@@ -673,9 +753,18 @@ async function submitPropertyForm() {
     return;
   }
 
-  if (!data.title) { showToast('Please enter a title.', 'error'); return; }
-  if (!data.location) { showToast('Please enter a location.', 'error'); return; }
-  if (!data.price) { showToast('Please enter a price.', 'error'); return; }
+  if (type === 'miniposts') {
+    if (!data.category || !data.area || !data.detailsEn) {
+      showToast('Please provide Category, Area, and English Details', 'error');
+      return;
+    }
+  } else {
+    if (!data.title) { showToast(type === 'clients' ? 'Please enter a name.' : 'Please enter a title.', 'error'); return; }
+    if (type !== 'clients') {
+      if (!data.location) { showToast('Please enter a location.', 'error'); return; }
+      if (!data.price) { showToast('Please enter a price.', 'error'); return; }
+    }
+  }
 
   const btn = document.getElementById('prop-form-submit');
   if (btn) btn.disabled = true;
@@ -740,6 +829,41 @@ async function handleImageUpload(event) {
     }
   }
   // Reset input so same files can be re-selected if needed
+  event.target.value = '';
+}
+
+async function handleCompanyLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Logo is too large (>2MB).', 'error');
+    return;
+  }
+  try {
+    const base64 = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    });
+    
+    // We can compress log just like images
+    let finalImage = base64;
+    try {
+      finalImage = await compressImage(base64);
+    } catch(e) { } // If compression fails, use original Base64 (it is < 2MB anyways)
+    
+    const preview = document.getElementById('pf-company-logo-preview');
+    const hidden = document.getElementById('pf-company-logo-hidden');
+    if (preview) {
+      preview.src = finalImage;
+      preview.style.display = 'block';
+    }
+    if (hidden) {
+      hidden.value = finalImage;
+    }
+  } catch (err) {
+    showToast('Failed to load company logo', 'error');
+  }
   event.target.value = '';
 }
 
@@ -947,3 +1071,288 @@ async function submitEditAbout() {
     btn.disabled = false;
   }
 }
+
+// ==== REGISTERED USERS VIEW (ADMIN ONLY) ====
+window.renderRegisteredUsers = async function(pageIndexRaw) {
+  if (!Admin.isLoggedIn()) {
+    showToast('Unauthorized access', 'error');
+    if (typeof navigate === 'function') navigate('about');
+    return;
+  }
+  
+  const content = document.getElementById('page-content');
+  content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div></div>';
+
+  try {
+    const usersSnap = await db.collection('users').orderBy('lastSignIn', 'desc').get();
+    const totalUsers = usersSnap.size;
+    const allUsers = usersSnap.docs.map(doc => doc.data());
+    
+    const pageSize = 50;
+    const totalPages = Math.ceil(totalUsers / pageSize) || 1;
+    let pageIndex = parseInt(pageIndexRaw, 10);
+    if (isNaN(pageIndex) || pageIndex < 1) pageIndex = 1;
+    const currentPage = Math.max(1, Math.min(pageIndex, totalPages));
+    
+    const startIndex = (currentPage - 1) * pageSize;
+    const pagedUsers = allUsers.slice(startIndex, startIndex + pageSize);
+    
+    let rowsHtml = '';
+    if (pagedUsers.length === 0) {
+      rowsHtml = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--mid-grey)">No registered users found.</td></tr>';
+    } else {
+      pagedUsers.forEach((u, i) => {
+        const email = u.email || 'N/A';
+        const name = u.displayName || 'N/A';
+        const lastSignIn = u.lastSignIn ? new Date(u.lastSignIn).toLocaleString() : 'N/A';
+        rowsHtml += `
+          <tr>
+            <td style="color:var(--mid-grey)">${startIndex + i + 1}</td>
+            <td style="font-weight:600;color:var(--navy)">${esc(name)}</td>
+            <td>${esc(email)}</td>
+            <td style="color:var(--mid-grey);font-size:0.9rem">${esc(lastSignIn)}</td>
+          </tr>
+        `;
+      });
+    }
+
+    let paginationHtml = '';
+    if (totalPages > 1) {
+      paginationHtml = `
+        <div style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top: 32px;">
+          <button class="btn btn-secondary btn-sm" ${currentPage === 1 ? 'disabled style="opacity:0.5;cursor:not-allowed"' : ''} onclick="window.renderRegisteredUsers(${currentPage - 1})">← Previous</button>
+          <span style="font-size:0.9rem;color:var(--navy);font-weight:600">Page ${currentPage} of ${totalPages}</span>
+          <button class="btn btn-secondary btn-sm" ${currentPage === totalPages ? 'disabled style="opacity:0.5;cursor:not-allowed"' : ''} onclick="window.renderRegisteredUsers(${currentPage + 1})">Next →</button>
+        </div>
+      `;
+    }
+
+    content.innerHTML = `
+      <div class="hero" style="padding: 40px 0;">
+        <div class="container" style="position:relative;z-index:1">
+          <button class="btn btn-ghost" style="position:absolute; top: -10px; left: 0; padding:6px 12px; font-size:0.85rem; color: white; border-color: rgba(255,255,255,0.3);" onclick="navigate('about')">← Back to About</button>
+          <h1 style="font-size: clamp(2rem, 4vw, 2.8rem); margin-bottom:8px">Registered Users</h1>
+          <p style="font-size:1.1rem; color: #FFAC70; font-weight:600; letter-spacing:0.05em">Total Users: ${totalUsers}</p>
+        </div>
+      </div>
+      <section class="section" style="background:var(--white); min-height: 50vh;">
+        <div class="container" style="max-width:900px">
+          <div class="property-table-wrap" style="box-shadow:var(--shadow-sm); border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--light-grey)">
+            <table class="property-table" style="width:100%; margin:0">
+              <thead>
+                <tr>
+                  <th style="width:60px">#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Last Sign In</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHtml}
+              </tbody>
+            </table>
+          </div>
+          ${paginationHtml}
+        </div>
+      </section>
+    `;
+
+    window.scrollTo(0, 0);
+  } catch (error) {
+    console.error('Error loading users:', error);
+    content.innerHTML = '<div class="container section" style="text-align:center"><h3>Error loading users</h3><p style="color:red">'+esc(error.message)+'</p><button class="btn btn-primary mt-4" onclick="navigate(\'about\')">Back</button></div>';
+  }
+};
+
+// ==== MARKETING VIEW (ADMIN ONLY) ====
+window.renderMarketing = function() {
+  if (!Admin.isLoggedIn()) {
+    showToast('Unauthorized access', 'error');
+    if (typeof navigate === 'function') navigate('about');
+    return;
+  }
+  
+  const content = document.getElementById('page-content');
+  
+  content.innerHTML = `
+    <div class="hero" style="padding: 40px 0; background: linear-gradient(135deg, var(--navy-light) 0%, var(--navy) 100%);">
+      <div class="container" style="position:relative;z-index:1; text-align:center;">
+        <h1 style="font-size: clamp(2rem, 4vw, 2.5rem); margin-bottom:8px; color: white;">Marketing Dashboard</h1>
+        <p style="font-size:1.1rem; color: var(--gold-light);">Publish to Facebook, Instagram, and YouTube</p>
+      </div>
+    </div>
+    <section class="section" style="background:var(--off-white); min-height: 60vh;">
+      <div class="container" style="max-width:800px">
+        <div style="background:white; padding: 40px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); border: 1px solid var(--light-grey);">
+          
+          <div class="form-row" style="margin-bottom: 24px;">
+            <div class="form-group" style="flex:1;">
+              <label class="form-label" style="font-weight:600; font-size:1rem;">Post Type</label>
+              <select class="form-control" id="mkt-post-type" style="padding: 12px;" onchange="window.toggleMarketingType()">
+                <option value="image">📸 Image Post (Facebook / Instagram)</option>
+                <option value="video">🎥 Video Post (YouTube / Facebook / Instagram)</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1;">
+              <label class="form-label" style="font-weight:600; font-size:1rem;">Select Platforms</label>
+              <div style="display:flex; gap: 16px; margin-top: 12px; align-items:center;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="plat-fb" checked style="width:18px;height:18px"> Facebook</label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;"><input type="checkbox" id="plat-ig" checked style="width:18px;height:18px"> Instagram</label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;" id="lbl-plat-yt" style="display:none;"><input type="checkbox" id="plat-yt" style="width:18px;height:18px"> YouTube</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 24px;">
+            <label class="form-label" style="font-weight:600; font-size:1rem;">Media File (<span id="mkt-file-hint">Images only</span>)</label>
+            <div class="img-upload-area" id="mkt-drop-zone" style="background: #fdfdfd; border: 2px dashed rgba(201,168,76,0.5); padding: 40px; text-align:center; border-radius: var(--radius-sm);">
+              <div id="mkt-preview" style="margin-bottom:16px; max-height:250px; overflow:hidden; border-radius:8px; display:none;"></div>
+              <label class="btn btn-secondary" for="mkt-file-input" style="cursor:pointer; display:inline-block;">
+                📁 Browse Local File
+                <input type="file" id="mkt-file-input" accept="image/*" style="display:none" onchange="window.handleMarketingFile(event)">
+              </label>
+              <p style="margin-top:12px; font-size:0.85rem; color:var(--mid-grey)" id="mkt-file-formats">Recommended: JPG, PNG.</p>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 32px;">
+            <label class="form-label" style="font-weight:600; font-size:1rem;">Post Description / Caption</label>
+            <textarea class="form-control" id="mkt-desc" rows="5" placeholder="Write an engaging caption for your local audience..." style="padding: 16px; font-size:1rem;"></textarea>
+          </div>
+
+          <div style="text-align:right;">
+            <button class="btn btn-primary btn-lg" id="mkt-publish-btn" onclick="window.publishMarketingPost()" style="padding: 14px 40px;">
+              🚀 Publish to Socials
+            </button>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+  `;
+  window.scrollTo(0, 0);
+  window.toggleMarketingType(); // initialize state
+};
+
+window.toggleMarketingType = function() {
+  const type = document.getElementById('mkt-post-type').value;
+  const input = document.getElementById('mkt-file-input');
+  const hint = document.getElementById('mkt-file-hint');
+  const formats = document.getElementById('mkt-file-formats');
+  const ytLabel = document.getElementById('lbl-plat-yt');
+  const ytBox = document.getElementById('plat-yt');
+
+  if (type === 'image') {
+    input.accept = 'image/*';
+    hint.textContent = 'Images only';
+    formats.textContent = 'Recommended: JPG, PNG.';
+    if(ytLabel) ytLabel.style.display = 'none';
+    if(ytBox) ytBox.checked = false;
+  } else {
+    input.accept = 'video/*';
+    hint.textContent = 'Videos only';
+    formats.textContent = 'Recommended: MP4, MOV (Max 100MB for demo).';
+    if(ytLabel) ytLabel.style.display = 'flex';
+  }
+  
+  // Clear file buffer
+  input.value = '';
+  document.getElementById('mkt-preview').innerHTML = '';
+  document.getElementById('mkt-preview').style.display = 'none';
+};
+
+window.handleMarketingFile = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const preview = document.getElementById('mkt-preview');
+  preview.style.display = 'block';
+
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      preview.innerHTML = `<img src="${evt.target.result}" style="max-width:100%; max-height:250px; object-fit:contain; border-radius:8px;">`;
+    };
+    reader.readAsDataURL(file);
+  } else if (file.type.startsWith('video/')) {
+    const url = URL.createObjectURL(file);
+    preview.innerHTML = `
+      <video src="${url}" controls style="max-width:100%; max-height:250px; border-radius:8px;"></video>
+      <div style="margin-top:8px;font-size:0.85rem;color:var(--navy);">${file.name} (${(file.size/1024/1024).toFixed(2)} MB)</div>
+    `;
+  } else {
+    preview.innerHTML = '<div style="color:red">Unsupported file format.</div>';
+  }
+};
+
+window.publishMarketingPost = async function() {
+  const type = document.getElementById('mkt-post-type').value;
+  const desc = document.getElementById('mkt-desc').value.trim();
+  const fileInput = document.getElementById('mkt-file-input');
+  const file = fileInput.files[0];
+  const btn = document.getElementById('mkt-publish-btn');
+  
+  const fb = document.getElementById('plat-fb').checked;
+  const ig = document.getElementById('plat-ig').checked;
+  const yt = document.getElementById('plat-yt') ? document.getElementById('plat-yt').checked : false;
+
+  if (!fb && !ig && !yt) {
+    if (typeof showToast === 'function') showToast('Please select at least one platform.', 'error');
+    return;
+  }
+
+  if (!file) {
+    if (typeof showToast === 'function') showToast('Please attach a media file to publish.', 'error');
+    return;
+  }
+
+  if (!desc) {
+    if (typeof showToast === 'function') showToast('Please write a description/caption.', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = 'Uploading & Publishing...';
+
+  try {
+    const formData = new FormData();
+    formData.append('media', file);
+    formData.append('desc', desc);
+    formData.append('type', type);
+    formData.append('fb', fb);
+    formData.append('ig', ig);
+    formData.append('yt', yt);
+
+    const publishUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? 'http://localhost:3001/api/publish' 
+      : 'https://' + window.location.hostname + '/api/publish';
+
+    const resp = await fetch(publishUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await resp.json();
+
+    if (result.success) {
+      if (typeof showToast === 'function') showToast('✅ Successfully processed post!', 'success');
+      alert(`Publish Flow Completed!\n\nFacebook: ${JSON.stringify(result.facebook || 'N/A')}\nInstagram: ${JSON.stringify(result.instagram || 'N/A')}\nYouTube: ${JSON.stringify(result.youtube || 'N/A')}`);
+      
+      fileInput.value = '';
+      document.getElementById('mkt-desc').value = '';
+      document.getElementById('mkt-preview').style.display = 'none';
+      
+    } else {
+      if (typeof showToast === 'function') showToast('Failed: ' + result.error, 'error');
+      alert(`Error during publish: ${result.error}\nIf it says Missing credentials, ensure you have created a .env file and placed the keys inside it!`);
+    }
+
+  } catch(e) {
+    if (typeof showToast === 'function') showToast('Network Error', 'error');
+    alert('Failed to reach the API server. Ensure server.js is running and listening for requests.');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Publish to Socials';
+  }
+};
