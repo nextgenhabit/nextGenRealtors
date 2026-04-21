@@ -359,7 +359,7 @@ async function addMPArea() {
 async function deleteMPArea(id) {
   if (!confirm('Are you sure you want to delete this area?')) return;
   try {
-    await DB.mp_areas.delete(id);
+    await DB.mp_areas.del(id);
     showToast('Area deleted successfully.', 'success');
     renderMPAreaList();
   } catch (e) {

@@ -204,6 +204,11 @@ const DB = {
     add: (d) => addItem('users', d),
     update: (id, d) => updateItem('users', id, d),
   },
+  mp_areas: {
+    get: () => getData(KEYS.mp_areas),
+    add: (d) => addItem(KEYS.mp_areas, d),
+    del: (id) => deleteItem(KEYS.mp_areas, id),
+  },
 };
 
 // Seed data function removed, as Firebase is persistent without localStorage reset loops!
