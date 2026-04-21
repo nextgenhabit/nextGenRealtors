@@ -312,16 +312,78 @@ async function submitResetPassword() {
   btn.disabled = false;
 }
 
+// ==== MINI POST AREA MANAGEMENT ====
+async function showMPAreaManager() {
+  if (!Admin.isLoggedIn()) return;
+  openModal('mp-areas-modal');
+  renderMPAreaList();
+}
+
+async function renderMPAreaList() {
+  const container = document.getElementById('mpa-list');
+  if (!container) return;
+  container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mid-grey)">Loading...</div>';
+
+  try {
+    const areas = await DB.mp_areas.get();
+    if (areas.length === 0) {
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--mid-grey)">No areas added yet.</div>';
+    } else {
+      container.innerHTML = areas.map(a => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee">
+          <span style="font-weight:500; color:var(--navy)">${esc(a.name)}</span>
+          <button class="btn btn-sm" style="background:var(--red-tint); color:var(--red); border:none; padding:4px 10px" onclick="deleteMPArea('${a.id}')">🗑️ Delete</button>
+        </div>
+      `).join('');
+    }
+  } catch (e) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--red)">Failed to load.</div>';
+  }
+}
+
+async function addMPArea() {
+  const input = document.getElementById('mpa-new-name');
+  const name = input.value.trim();
+  if (!name) { showToast('Please enter an area name.', 'error'); return; }
+
+  try {
+    await DB.mp_areas.add({ name });
+    input.value = '';
+    showToast('Area added successfully.', 'success');
+    renderMPAreaList();
+  } catch (e) {
+    showToast('Failed to add area.', 'error');
+  }
+}
+
+async function deleteMPArea(id) {
+  if (!confirm('Are you sure you want to delete this area?')) return;
+  try {
+    await DB.mp_areas.delete(id);
+    showToast('Area deleted successfully.', 'success');
+    renderMPAreaList();
+  } catch (e) {
+    showToast('Failed to delete area.', 'error');
+  }
+}
+
 // ---- Generic Property Form ----
 // type: 'plots' | 'flats' | 'villas'
 // editItem: existing item to edit (or null for add)
-function showPropertyForm(type, editItem = null) {
+async function showPropertyForm(type, editItem = null) {
   if (!Admin.isLoggedIn()) { showToast('Please login as admin first.', 'error'); return; }
+
+  let areas = [];
+  if (type === 'miniposts') {
+    try {
+      areas = await DB.mp_areas.get();
+    } catch (e) { console.error('Failed to load areas', e); }
+  }
 
   const isEdit = !!editItem;
   const title = isEdit ? `Edit ${capitalize(type.slice(0, -1))}` : `Add New ${capitalize(type.slice(0, -1))}`;
 
-  const formHtml = buildFormHtml(type, editItem ?? {});
+  const formHtml = buildFormHtml(type, editItem ?? {}, areas);
 
   document.getElementById('prop-form-modal-title').textContent = title;
   document.getElementById('prop-form-fields').innerHTML = formHtml;
@@ -338,7 +400,7 @@ function showPropertyForm(type, editItem = null) {
   openModal('prop-form-modal');
 }
 
-function buildFormHtml(type, d = {}) {
+function buildFormHtml(type, d = {}, areas = []) {
   const commonTop = `
     <div class="form-group">
       <label class="form-label">Company Logo <span style="font-weight:400;color:var(--mid-grey)">(optional)</span></label>
@@ -652,7 +714,11 @@ function buildFormHtml(type, d = {}) {
         </div>
         <div class="form-group">
           <label class="form-label">Area *</label>
-          <input class="form-control" id="pf-area" placeholder="e.g. Gachibowli, Tellapur..." value="${esc(d.area || '')}">
+          <select class="form-control" id="pf-area">
+            <option value="">-- Select Area --</option>
+            ${areas.map(a => `<option value="${esc(a.name)}" ${d.area === a.name ? 'selected' : ''}>${esc(a.name)}</option>`).join('')}
+          </select>
+          <small style="color:var(--mid-grey); margin-top:4px; display:block">Manage this list via "Manage Areas" button.</small>
         </div>
       </div>
       <div class="form-group">

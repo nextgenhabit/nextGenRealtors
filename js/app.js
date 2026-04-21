@@ -1729,7 +1729,7 @@ function mpDrawUI() {
     + '<p class="hero-eyebrow">PREMIUM SECURE ACCESS</p><h1>Mini Posts</h1></div></div>'
     + '<section class="section" style="background:var(--off-white);min-height:80vh;text-align:center;">'
     + '<div class="container" style="max-width:1200px;">'
-    + (isAdmin ? '<div style="text-align:right;margin-bottom:20px;"><button class="btn btn-primary btn-sm" onclick="showPropertyForm(\'miniposts\')">➕ Add Mini Post</button></div>' : '')
+    + (isAdmin ? '<div style="text-align:right;margin-bottom:20px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="showMPAreaManager()" style="border-color:var(--light-grey);background:white;">🗺️ Manage Areas</button><button class="btn btn-primary btn-sm" onclick="showPropertyForm(\'miniposts\')">➕ Add Mini Post</button></div>' : '')
     + '<div style="margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">' + catHtml + '</div>'
     + '<div style="background:white;border-radius:12px;padding:16px;margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(0,0,0,0.03);">' + areaHtml + '</div>'
     + '<style>.mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:left;}'

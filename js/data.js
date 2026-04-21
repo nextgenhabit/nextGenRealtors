@@ -31,6 +31,7 @@ const KEYS = {
   contact: "contact",
   about: "about",
   settings: "settings",
+  mp_areas: "mp_areas",
 };
 
 // ---- Cache Layer for Performance ----
@@ -47,6 +48,7 @@ const _dbCache = {
   contact: null,
   about: null,
   settings: null,
+  mp_areas: null,
 };
 
 // ---- Generic helpers ----
