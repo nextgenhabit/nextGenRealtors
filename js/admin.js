@@ -638,6 +638,10 @@ function buildFormHtml(type, d = {}) {
     `;
   } else if (type === 'miniposts') {
     return `
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input class="form-control" id="pf-title" placeholder="e.g. Spacious 3BHK for Rent, Open Plot..." value="${esc(d.title || '')}">
+      </div>
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Category *</label>
@@ -728,6 +732,7 @@ function collectFormData(type) {
   }
   if (type === 'miniposts') {
     return {
+      title: g('pf-title'),
       category: g('pf-category'),
       area: g('pf-area'),
       detailsEn: g('pf-detailsEn'),
