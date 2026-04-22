@@ -71,7 +71,7 @@ const en = {
     // About Page Static
     "about_hero_eyebrow": "Real Estate Professional",
     "about_hero_badge": "⭐ Top Rated Agent",
-    "about_stats_1_num": "15+",
+    "about_stats_1_num": "8+",
     "about_stats_1_label": "Years Experience",
     "about_stats_2_num": "500+",
     "about_stats_2_label": "Deals Closed",

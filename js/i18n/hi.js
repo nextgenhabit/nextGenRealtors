@@ -71,7 +71,7 @@ const hi = {
     // About Page Static
     "about_hero_eyebrow": "रियल एस्टेट पेशेवर",
     "about_hero_badge": "⭐ टॉप रेटेड एजेंट",
-    "about_stats_1_num": "15+",
+    "about_stats_1_num": "8+",
     "about_stats_1_label": "वर्षों का अनुभव",
     "about_stats_2_num": "500+",
     "about_stats_2_label": "सौदे पक्के किए",

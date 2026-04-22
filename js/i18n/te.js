@@ -71,7 +71,7 @@ const te = {
     // About Page Static
     "about_hero_eyebrow": "రియల్ ఎస్టేట్ ప్రొఫెషనల్",
     "about_hero_badge": "⭐ టాప్ రేటెడ్ ఏజెంట్",
-    "about_stats_1_num": "15+",
+    "about_stats_1_num": "8+",
     "about_stats_1_label": "సంవత్సరాల అనుభవం",
     "about_stats_2_num": "500+",
     "about_stats_2_label": "డీల్స్ క్లోజ్ చేయబడ్డాయి",
