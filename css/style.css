@@ -2669,4 +2669,54 @@ textarea.form-control {
 #admin-btn.show-admin-btn {
   display: inline-flex !important;
 }
+
+/* ---- Social Media Handles Section ---- */
+.social-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: var(--transition);
+  min-width: 140px;
+  border: 1px solid #f0f0f0;
+  text-decoration: none !important;
+}
+
+.social-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--gold-light);
+}
+
+.social-card-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  transition: var(--transition);
+  color: white;
+}
+
+.social-card span {
+  font-weight: 600;
+  color: var(--navy);
+  font-size: 0.95rem;
+}
+
+/* Platform Colors */
+.social-card-icon.fb { background: #1877F2; }
+.social-card-icon.insta { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+.social-card-icon.yt { background: #FF0000; }
+.social-card-icon.wa { background: #25D366; }
+
+.social-card:hover .social-card-icon {
+  transform: scale(1.1);
+}
 
