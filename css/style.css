@@ -2719,4 +2719,82 @@ textarea.form-control {
 .social-card:hover .social-card-icon {
   transform: scale(1.1);
 }
+
+/* ---- Property Category Cards ---- */
+.cat-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.cat-card {
+  position: relative;
+  height: 380px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: flex-end;
+  padding: 30px;
+}
+
+.cat-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(13, 46, 79, 0.9) 0%, rgba(13, 46, 79, 0.3) 50%, transparent 100%);
+  transition: var(--transition);
+}
+
+.cat-card-content {
+  position: relative;
+  z-index: 2;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.cat-card h3 {
+  color: white;
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.cat-card-link {
+  color: var(--gold-light);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  opacity: 0;
+  transform: translateY(10px);
+  display: block;
+  transition: var(--transition);
+}
+
+.cat-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-lg);
+}
+
+.cat-card:hover .cat-card-overlay {
+  background: linear-gradient(to top, rgba(243, 119, 33, 0.8) 0%, rgba(13, 46, 79, 0.4) 100%);
+}
+
+.cat-card:hover .cat-card-link {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 1024px) {
+  .cat-card-grid { grid-template-columns: repeat(2, 1fr); }
+  .cat-card { height: 320px; }
+}
+
+@media (max-width: 600px) {
+  .cat-card-grid { grid-template-columns: 1fr; }
+  .cat-card { height: 280px; }
+}
 

@@ -612,6 +612,47 @@ async function renderAbout() {
     </div>
   </section>
 
+  <!-- Find Your Perfect Property Categories -->
+  <section class="section" style="background:var(--white); padding-top:40px;">
+    <div class="container">
+      <div class="section-header" style="margin-bottom:48px;">
+        <p class="hero-eyebrow" style="color:#AF7343;">DISCOVER OUR PORTFOLIO</p>
+        <h2 style="color:var(--navy);">Find Your Perfect Property</h2>
+        <p>Explore our curated selection of premium real estate across Hyderabad's most sought-after locations.</p>
+      </div>
+      <div class="cat-card-grid">
+        <div class="cat-card fade-up" onclick="navigate('plots')" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Plots</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+        <div class="cat-card fade-up fade-up-delay-1" onclick="navigate('villas')" style="background-image: url('https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Villas</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+        <div class="cat-card fade-up fade-up-delay-2" onclick="navigate('commercial')" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Commercial</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+        <div class="cat-card fade-up fade-up-delay-3" onclick="navigate('apartments')" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Apartments</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Mission & Vision -->
   <section class="section" style="background:var(--white)">
     <div class="container">
