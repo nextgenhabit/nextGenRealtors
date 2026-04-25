@@ -1107,7 +1107,7 @@ textarea.form-control {
   height: 120%;
 
   /* Modern glass skyscrapers against a clear sky (matches user reference) */
-  background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2500&auto=format&fit=crop');
+  background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1600&auto=format&fit=crop');
 
   /* Alternative 1: Upscale suburban luxury home */
   /* background-image: url('https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=2500&auto=format&fit=crop'); */

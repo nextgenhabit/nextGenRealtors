@@ -473,42 +473,27 @@ async function renderAbout() {
   const content = document.getElementById('page-content');
   content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div></div>';
 
-  let aboutData = [];
-  let registeredUsersCount = 0;
+  let aboutData = [], registeredUsersCount = 0, clientsData = [], allPlots = [], allApartments = [];
   try {
-    aboutData = await DB.about.get();
+    const results = await Promise.all([
+      DB.about.get(),
+      db.collection('users').get(),
+      DB.clients.get(),
+      DB.plots.get(),
+      DB.apartments.get()
+    ]);
+    
+    aboutData = results[0];
+    registeredUsersCount = results[1].size;
+    clientsData = results[2];
+    allPlots = results[3];
+    allApartments = results[4];
   } catch (e) {
-    console.error(e);
-  }
-  try {
-    const usersSnap = await db.collection('users').get();
-    registeredUsersCount = usersSnap.size;
-  } catch (e) {
-    console.error('Failed to fetch user count', e);
-  }
-
-  let clientsData = [];
-  try {
-    clientsData = await DB.clients.get();
-  } catch (e) {
-    console.error('Failed to fetch clients', e);
+    console.error('Data fetch failed', e);
   }
 
-  let onDemandPlots = [];
-  try {
-    const allPlots = await DB.plots.get();
-    onDemandPlots = allPlots.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
-  } catch (e) {
-    console.error('Failed to fetch on demand plots', e);
-  }
-
-  let onDemandApartments = [];
-  try {
-    const allApartments = await DB.apartments.get();
-    onDemandApartments = allApartments.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
-  } catch (e) {
-    console.error('Failed to fetch on demand apartments', e);
-  }
+  const onDemandPlots = allPlots.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
+  const onDemandApartments = allApartments.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
 
   const defaultAbout = {
     name: 'NextGen Realtors',
@@ -1867,6 +1852,12 @@ function mpDrawUI() {
     + '<section class="section" style="background:var(--off-white);min-height:80vh;text-align:center;">'
     + '<div class="container" style="max-width:1200px;">'
     + (isAdmin ? '<div style="text-align:right;margin-bottom:20px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="showMPAreaManager()" style="border-color:var(--light-grey);background:white;">🗺️ Manage Areas</button><button class="btn btn-primary btn-sm" onclick="showPropertyForm(\'miniposts\')">➕ Add Mini Post</button></div>' : '')
+    + '<div style="background:#fff9e6; border:1px solid #ffe58f; border-radius:8px; padding:12px 16px; margin-bottom:24px; text-align:left; display:flex; gap:12px; align-items:center;">'
+    + '<span style="font-size:1.4rem;">⚠️</span>'
+    + '<p style="margin:0; font-size:0.85rem; color:#856404; line-height:1.5;">'
+    + '<strong>Disclaimer:</strong> Mini posts displayed in NextGen Realtors are only for advertisement purpose. '
+    + 'NextGen Realtors do not take any accountability on the legal issues of the properties details posted in Mini Posts.'
+    + '</p></div>'
     + '<div style="margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">' + catHtml + '</div>'
     + '<div style="background:white;border-radius:12px;padding:16px;margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(0,0,0,0.03);">' + areaHtml + '</div>'
     + '<style>.mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:left;}'

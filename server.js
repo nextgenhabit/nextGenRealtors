@@ -19,18 +19,34 @@ const upload = multer({ storage: multer.memoryStorage() });
 // ---- Your Fast2SMS API Key ----
 const FAST2SMS_API_KEY = 'G2Odr3luxCqjJ7cUnwbBv5gfVyLFzQM91Hie0oskIWaDYNXh6mUnloSROW5kGiPA19hyJQKpETmMgDBZ';
 
-// ---- Allow CORS from the frontend (port 3000) ----
+// ---- Allow CORS & Security Headers ----
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Security Headers
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com https://securetoken.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://formsubmit.co wss://*.firebaseio.com; frame-src 'self' https://www.google.com https://nextgenrealtors-e3e3c.firebaseapp.com; frame-ancestors 'none';");
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
 
 // ---- Health check ----
-app.get('/', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({ status: 'NextGen Realtors Proxy is running ✅' });
+});
+
+// ---- Serve Frontend Files ----
+app.use(express.static(__dirname));
+
+// ---- Fallback for SPA routing (optional but helpful) ----
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
 });
 
 // ---- 1. Fast2SMS OTP Proxy ----
