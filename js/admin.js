@@ -542,6 +542,13 @@ function buildFormHtml(type, d = {}, areas = []) {
             </label>
           </div>
         </div>
+        <div class="form-group">
+          <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
+          <select class="form-control" id="pf-projectOnDemand">
+            <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
+            <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
+          </select>
+        </div>
       </div>` + getPriceAndDesc(type, d);
   }
 
@@ -573,9 +580,18 @@ function buildFormHtml(type, d = {}, areas = []) {
           </select>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Amenities</label>
-        <input class="form-control" id="pf-amenities" placeholder="e.g. Pool, Gym, Clubhouse" value="${esc(d.amenities || '')}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Amenities</label>
+          <input class="form-control" id="pf-amenities" placeholder="e.g. Pool, Gym, Clubhouse" value="${esc(d.amenities || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
+          <select class="form-control" id="pf-projectOnDemand">
+            <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
+            <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
+          </select>
+        </div>
       </div>` + getPriceAndDesc(type, d);
   }
 
@@ -611,9 +627,18 @@ function buildFormHtml(type, d = {}, areas = []) {
           <input class="form-control" id="pf-clubHouseSize" placeholder="e.g. 20,000 sq ft" value="${esc(d.clubHouseSize || '')}">
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Amenities</label>
-        <input class="form-control" id="pf-amenities" placeholder="e.g. Pool, Gym, Park" value="${esc(d.amenities || '')}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Amenities</label>
+          <input class="form-control" id="pf-amenities" placeholder="e.g. Pool, Gym, Park" value="${esc(d.amenities || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
+          <select class="form-control" id="pf-projectOnDemand">
+            <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
+            <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
+          </select>
+        </div>
       </div>` + getPriceAndDesc(type, d);
   }
 
@@ -647,6 +672,12 @@ function buildFormHtml(type, d = {}, areas = []) {
             <span class="form-label" style="margin-bottom:0">🌿 Garden / Lawn</span>
           </label>
         </div>
+      <div class="form-group">
+        <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
+        <select class="form-control" id="pf-projectOnDemand">
+          <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
+          <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
+        </select>
       </div>` + getPriceAndDesc(type, d);
   } else if (type === 'commercial') {
     return commonTop + `
@@ -670,12 +701,21 @@ function buildFormHtml(type, d = {}, areas = []) {
           <input class="form-control" id="pf-parking" placeholder="e.g. 3 Covered" value="${esc(d.parking || '')}">
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Furnishing Status</label>
-        <select class="form-control" id="pf-furnishing">
-          ${['Bare Shell', 'Plug & Play', 'Fully Furnished', 'Semi-Furnished']
-        .map(fu => `<option ${d.furnishing === fu ? 'selected' : ''}>${fu}</option>`).join('')}
-        </select>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Furnishing Status</label>
+          <select class="form-control" id="pf-furnishing">
+            ${['Bare Shell', 'Plug & Play', 'Fully Furnished', 'Semi-Furnished']
+          .map(fu => `<option ${d.furnishing === fu ? 'selected' : ''}>${fu}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
+          <select class="form-control" id="pf-projectOnDemand">
+            <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
+            <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
+          </select>
+        </div>
       </div>` + getPriceAndDesc(type, d);
   } else if (type === 'clients') {
     return `
@@ -720,6 +760,14 @@ function buildFormHtml(type, d = {}, areas = []) {
           </select>
           <small style="color:var(--mid-grey); margin-top:4px; display:block">Manage this list via "Manage Areas" button.</small>
         </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status *</label>
+        <select class="form-control" id="pf-status">
+          <option value="Available" ${d.status !== 'Sold Out' && d.status !== 'Expired' ? 'selected' : ''}>Available</option>
+          <option value="Sold Out" ${d.status === 'Sold Out' ? 'selected' : ''}>Sold Out</option>
+          <option value="Expired" ${d.status === 'Expired' ? 'selected' : ''}>Expired</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Details (English) *</label>
@@ -775,19 +823,20 @@ function collectFormData(type) {
       approvedBy: g('pf-approvedBy'),
       lpNumber: g('pf-lpNumber'),
       reraApproved: (document.getElementById('pf-rera-yes')?.checked ? 'Yes' : 'No'),
+      projectOnDemand: g('pf-projectOnDemand'),
     };
   }
   if (type === 'flats') {
-    return { ...base, bhk: g('pf-bhk'), area: g('pf-area'), floor: g('pf-floor'), furnishing: g('pf-furnishing'), amenities: g('pf-amenities') };
+    return { ...base, bhk: g('pf-bhk'), area: g('pf-area'), floor: g('pf-floor'), furnishing: g('pf-furnishing'), amenities: g('pf-amenities'), projectOnDemand: g('pf-projectOnDemand') };
   }
   if (type === 'apartments') {
-    return { ...base, acres: g('pf-acres'), blocks: g('pf-blocks'), flatSizes: g('pf-flatSizes'), totalUnits: g('pf-totalUnits'), amenities: g('pf-amenities'), floors: g('pf-floors'), clubHouseSize: g('pf-clubHouseSize') };
+    return { ...base, acres: g('pf-acres'), blocks: g('pf-blocks'), flatSizes: g('pf-flatSizes'), totalUnits: g('pf-totalUnits'), amenities: g('pf-amenities'), floors: g('pf-floors'), clubHouseSize: g('pf-clubHouseSize'), projectOnDemand: g('pf-projectOnDemand') };
   }
   if (type === 'villas') {
-    return { ...base, bedrooms: g('pf-bedrooms'), landArea: g('pf-landArea'), builtUpArea: g('pf-builtUpArea'), hasPool: gb('pf-hasPool'), hasGarden: gb('pf-hasGarden') };
+    return { ...base, bedrooms: g('pf-bedrooms'), landArea: g('pf-landArea'), builtUpArea: g('pf-builtUpArea'), hasPool: gb('pf-hasPool'), hasGarden: gb('pf-hasGarden'), projectOnDemand: g('pf-projectOnDemand') };
   }
   if (type === 'commercial') {
-    return { ...base, area: g('pf-area'), floor: g('pf-floor'), washrooms: g('pf-washrooms'), parking: g('pf-parking'), furnishing: g('pf-furnishing') };
+    return { ...base, area: g('pf-area'), floor: g('pf-floor'), washrooms: g('pf-washrooms'), parking: g('pf-parking'), furnishing: g('pf-furnishing'), projectOnDemand: g('pf-projectOnDemand') };
   }
   if (type === 'clients') {
     return {
@@ -801,6 +850,7 @@ function collectFormData(type) {
       title: g('pf-title'),
       category: g('pf-category'),
       area: g('pf-area'),
+      status: g('pf-status') || 'Available',
       detailsEn: g('pf-detailsEn'),
       detailsHi: g('pf-detailsHi'),
       detailsTe: g('pf-detailsTe')

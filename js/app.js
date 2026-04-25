@@ -145,19 +145,13 @@ function renderPropertyCard(item, type) {
   <div class="property-card fade-up" data-id="${item.id}">
     <div class="card-image-wrap">
       ${imgOrIcon(item.imageUrl, icon)}
-      <div class="card-badge">
-        <span class="badge badge-navy">${type === 'plots' ? t('nav_plots') : type === 'flats' ? t('nav_flats') : type === 'apartments' ? 'Apartments' : type === 'villas' ? t('nav_villas') : t('nav_commercial')}</span>
-        ${item.status === 'Sold Out'
-      ? `<span class="badge" style="background:var(--danger);color:white;margin-left:4px">${t('status_soldout')}</span>`
-      : `<span class="badge" style="background:#25D366;color:white;margin-left:4px">${t('status_available')}</span>`}
-      </div>
       <div class="card-price-tag">${type === 'plots' ? esc(item.price) + ' <span style="font-size:0.75rem;opacity:0.9;font-weight:500;">/ Sq Yd</span>' : esc(item.price)}</div>
     </div>
     <div class="card-body">
       <h3 class="card-title">${esc(item.title)}</h3>
       <p class="card-location" style="display:flex;justify-content:space-between">
         <span>📍 ${esc(item.location)}</span>
-        ${item.propId ? `<span style="font-size:0.8rem;color:var(--mid-grey)">ID: #${item.propId}</span>` : ''}
+        ${item.propId ? `<span style="font-size:0.8rem;color:var(--text-dark);font-weight:500;">ID: #${item.propId}</span>` : ''}
       </p>
       <div class="card-specs">${specsHtml}</div>
       ${item.description ? `<p class="card-desc">${esc(item.description)}</p>` : ''}
@@ -261,6 +255,23 @@ async function renderDetail(type, id) {
        </div>`
     : '';
 
+  // Similar Properties Section
+  const similarItems = items
+    .filter(i => String(i.id) !== String(id))
+    .sort(() => 0.5 - Math.random()) // Shuffle for variety
+    .slice(0, 3);
+
+  let similarHtml = '';
+  if (similarItems.length > 0) {
+    similarHtml = `
+    <div class="similar-properties-section" style="margin-top: 80px; padding-top: 60px; border-top: 2px solid var(--off-white);">
+      <h2 style="text-align: center; margin-bottom: 40px; font-family: 'Playfair Display', serif; color: var(--navy); font-size: 2.2rem;">Similar ${type.charAt(0).toUpperCase() + type.slice(1)}</h2>
+      <div class="properties-grid">
+        ${similarItems.map(i => renderPropertyCard(i, type)).join('')}
+      </div>
+    </div>`;
+  }
+
   content.innerHTML = `
   <div class="hero">
     <div class="container" style="position:relative;z-index:1">
@@ -302,13 +313,17 @@ async function renderDetail(type, id) {
           </div>` : ''}
         </div>
       </div>
-      <div style="margin-top: 40px; text-align: center;">
+      
+      ${similarHtml}
+
+      <div style="margin-top: 60px; text-align: center;">
         <button class="btn btn-ghost" onclick="navigate('${type}')">← Return to Listings</button>
       </div>
     </div>
   </section>`;
 
   window.scrollTo(0, 0);
+  if (window.observeNewElements) window.observeNewElements();
 }
 
 // Keep old showDetail for compatibility if needed, but we'll mainly use renderDetail now
@@ -479,6 +494,22 @@ async function renderAbout() {
     console.error('Failed to fetch clients', e);
   }
 
+  let onDemandPlots = [];
+  try {
+    const allPlots = await DB.plots.get();
+    onDemandPlots = allPlots.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
+  } catch (e) {
+    console.error('Failed to fetch on demand plots', e);
+  }
+
+  let onDemandApartments = [];
+  try {
+    const allApartments = await DB.apartments.get();
+    onDemandApartments = allApartments.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
+  } catch (e) {
+    console.error('Failed to fetch on demand apartments', e);
+  }
+
   const defaultAbout = {
     name: 'NextGen Realtors',
     tagline: 'Your Trusted Guide',
@@ -587,25 +618,25 @@ async function renderAbout() {
         <p>Stay updated with our latest property listings and real estate insights.</p>
       </div>
       <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap; margin-bottom:40px;">
-        <a href="https://www.facebook.com/nextGenRealtorsHub" target="_blank" class="social-card fade-up">
-          <div class="social-card-icon fb">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
-          </div>
-          <span>Facebook</span>
-        </a>
-        <a href="https://www.instagram.com/nextgenrealtors4/" target="_blank" class="social-card fade-up" style="animation-delay:0.1s">
-          <div class="social-card-icon insta">📸</div>
-          <span>Instagram</span>
-        </a>
-        <a href="https://www.youtube.com/channel/UC06qF2z-4PF2_9wxP0uuLUA" target="_blank" class="social-card fade-up" style="animation-delay:0.2s">
-          <div class="social-card-icon yt">▶️</div>
-          <span>YouTube</span>
-        </a>
-        <a href="https://whatsapp.com/channel/0029VbCgeWyAzNbsnw5lZV3O" target="_blank" class="social-card fade-up" style="animation-delay:0.3s">
+        <a href="https://whatsapp.com/channel/0029VbCgeWyAzNbsnw5lZV3O" target="_blank" class="social-card fade-up">
           <div class="social-card-icon wa">
             <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           </div>
           <span>WhatsApp</span>
+        </a>
+        <a href="https://www.youtube.com/channel/UC06qF2z-4PF2_9wxP0uuLUA" target="_blank" class="social-card fade-up" style="animation-delay:0.1s">
+          <div class="social-card-icon yt">▶️</div>
+          <span>YouTube</span>
+        </a>
+        <a href="https://www.instagram.com/nextgenrealtors4/" target="_blank" class="social-card fade-up" style="animation-delay:0.2s">
+          <div class="social-card-icon insta">📸</div>
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.facebook.com/nextGenRealtorsHub" target="_blank" class="social-card fade-up" style="animation-delay:0.3s">
+          <div class="social-card-icon fb">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
+          </div>
+          <span>Facebook</span>
         </a>
       </div>
       <div style="border-top:1px solid #eee; margin-top:20px;"></div>
@@ -708,6 +739,34 @@ async function renderAbout() {
       </div>
     </div>
   </section>
+
+  ${onDemandApartments.length > 0 ? `
+  <section class="section" style="background:var(--off-white);">
+    <div class="container">
+      <div class="section-header" style="margin-bottom:48px;">
+        <p class="hero-eyebrow" style="color:var(--gold);">FEATURED</p>
+        <h2 style="color:var(--navy);">Apartments on Demand</h2>
+        <p>Explore our highly sought-after apartment projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandApartments.map(p => renderPropertyCard(p, 'apartments')).join('')}
+      </div>
+    </div>
+  </section>` : ''}
+
+  ${onDemandPlots.length > 0 ? `
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-header" style="margin-bottom:48px;">
+        <p class="hero-eyebrow" style="color:var(--gold);">FEATURED</p>
+        <h2 style="color:var(--navy);">Plots on Demand</h2>
+        <p>Explore our highly sought-after plot projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandPlots.map(p => renderPropertyCard(p, 'plots')).join('')}
+      </div>
+    </div>
+  </section>` : ''}
 
   <style>
     .mv-row { display: grid; gap: 40px; align-items: center; }
@@ -1787,10 +1846,13 @@ function mpDrawUI() {
       }
 
       const cardTitle = p.title ? _mpSafeText(p.title) : _mpSafeText(p.area);
+      const status = p.status || 'Available';
+      const statusColor = status === 'Sold Out' ? '#E74C3C' : status === 'Expired' ? '#95A5A6' : '#27AE60';
+      const statusBadge = '<span style="background:' + statusColor + ';color:white;font-size:0.65rem;padding:2px 8px;margin-left:8px;border-radius:4px;display:inline-block;vertical-align:middle;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">' + status + '</span>';
 
       return '<div class="fade-up" style="background:white;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.04);display:flex;flex-direction:column;">'
-        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;">'
-        + '<strong style="color:var(--navy);font-size:1.05rem;">' + cardTitle + '</strong>'
+        + '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;gap:8px;">'
+        + '<div style="flex:1;"><strong style="color:var(--navy);font-size:1.05rem;">' + cardTitle + '</strong>' + statusBadge + '</div>'
         + '<div style="display:flex;gap:4px;">' + adminBtns + '</div>'
         + '</div>'
         + '<div id="mp-detail-' + p.id + '" style="font-size:0.85rem;color:var(--dark-grey);line-height:1.6;flex:1;margin-bottom:12px;overflow-wrap:anywhere;">' + baseLang + '</div>'
