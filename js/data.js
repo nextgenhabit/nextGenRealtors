@@ -83,7 +83,7 @@ async function addItem(collection, item) {
     item.createdAt = new Date().toISOString();
 
     // Assign a sequential numerical ID (propId) for properties (plots, flats, villas, commercial, apartments)
-    if (["plots", "flats", "apartments", "villas", "commercial"].includes(collection)) {
+    if (["plots", "flats", "apartments", "villas", "commercial", "miniposts"].includes(collection)) {
       const snapshot = await db
         .collection(collection)
         .orderBy("propId", "desc")

@@ -1882,14 +1882,40 @@ function mpDrawUI() {
   const content = document.getElementById('page-content');
   if (!content) return;
 
-  const allPosts = window._mpRawData || [];
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+  const allPosts = (window._mpRawData || []).map(p => {
+    if (p.createdAt && new Date(p.createdAt) < ninetyDaysAgo) {
+      return { ...p, status: 'Expired' };
+    }
+    return p;
+  });
+
   const MP_CATS = ['House for Sale', 'Land for Sale', 'Plot for Sale', 'To-let'];
+  const isAdmin = (typeof Admin !== 'undefined' && Admin.isLoggedIn());
 
   if (!MP_CATS.includes(window._activeMinipostCat)) window._activeMinipostCat = MP_CATS[0];
 
-  const filtered = allPosts.filter(function(p) { return p.category === window._activeMinipostCat; });
+  const filtered = allPosts.filter(function(p) { 
+    if (p.category !== window._activeMinipostCat) return false;
+    // Hide expired posts from public view
+    if (p.status === 'Expired' && !isAdmin) return false;
+    return true;
+  });
   const uniqueAreas = [];
   const seenAreas = {};
+
+  // First, add predefined areas from DB
+  (window._mpAreas || []).forEach(function(a) {
+    const trimmed = a.trim();
+    if (trimmed && !seenAreas[trimmed]) {
+      seenAreas[trimmed] = true;
+      uniqueAreas.push(trimmed);
+    }
+  });
+
+  // Then, add any additional areas found in posts
   filtered.forEach(function(p) {
     const a = (p.area || '').trim();
     if (a && !seenAreas[a]) { seenAreas[a] = true; uniqueAreas.push(a); }
@@ -1984,15 +2010,20 @@ function mpDrawUI() {
       const cardTitle = p.title ? _mpSafeText(p.title) : _mpSafeText(p.area);
       const status = p.status || 'Available';
       const statusColor = status === 'Sold Out' ? '#E74C3C' : status === 'Expired' ? '#95A5A6' : '#27AE60';
-      const statusBadge = '<span style="background:' + statusColor + ';color:white;font-size:0.65rem;padding:2px 8px;margin-left:8px;border-radius:4px;display:inline-block;vertical-align:middle;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">' + status + '</span>';
+      const statusBadge = '<span style="background:' + statusColor + ';color:white;font-size:0.65rem;padding:2px 8px;border-radius:4px;display:inline-block;vertical-align:middle;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">' + status + '</span>';
 
       return '<div class="fade-up" style="background:white;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(0,0,0,0.04);display:flex;flex-direction:column;">'
         + '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid #eee;padding-bottom:8px;margin-bottom:12px;gap:8px;">'
-        + '<div style="flex:1;"><strong style="color:var(--navy);font-size:1.05rem;">' + cardTitle + '</strong>' + statusBadge + '</div>'
+        + '<strong style="color:var(--navy);font-size:1.05rem;flex:1;">' + cardTitle + '</strong>'
         + '<div style="display:flex;gap:4px;">' + adminBtns + '</div>'
         + '</div>'
         + '<div id="mp-detail-' + p.id + '" style="font-size:0.85rem;color:var(--dark-grey);line-height:1.6;flex:1;margin-bottom:12px;overflow-wrap:anywhere;">' + baseLang + '</div>'
         + translateHtml
+        + '<div style="font-size:0.75rem;color:var(--mid-grey);display:flex;align-items:center;gap:8px;flex-wrap:nowrap;border-top:1px solid #f5f5f5;padding-top:12px;margin-top:12px;overflow:hidden;">'
+        + statusBadge
+        + (p.propId ? '<span style="background:var(--navy);color:white;padding:2px 6px;border-radius:4px;font-weight:700;white-space:nowrap;">ID: #' + p.propId + '</span>' : '')
+        + (p.createdAt ? '<span style="white-space:nowrap;">📅 ' + new Date(p.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) + '</span>' : '')
+        + '</div>'
         + '</div>';
     }).join('');
   }
@@ -2000,17 +2031,33 @@ function mpDrawUI() {
   const isAdmin = (typeof Admin !== 'undefined' && Admin.isLoggedIn());
   content.innerHTML = '<div class="hero"><div class="container" style="position:relative;z-index:1">'
     + '<p class="hero-eyebrow">PREMIUM SECURE ACCESS</p><h1>Mini Posts</h1></div></div>'
-    + '<section class="section" style="background:var(--off-white);min-height:80vh;text-align:center;">'
+    + '<section class="section" style="background:var(--off-white);min-height:80vh;text-align:center;padding-top:30px;">'
     + '<div class="container" style="max-width:1200px;">'
     + (isAdmin ? '<div style="text-align:right;margin-bottom:20px;display:flex;justify-content:flex-end;gap:8px;"><button class="btn btn-ghost btn-sm" onclick="showMPAreaManager()" style="border-color:var(--light-grey);background:white;">🗺️ Manage Areas</button><button class="btn btn-primary btn-sm" onclick="showPropertyForm(\'miniposts\')">➕ Add Mini Post</button></div>' : '')
-    + '<div style="background:#fff9e6; border:1px solid #ffe58f; border-radius:8px; padding:12px 16px; margin-bottom:24px; text-align:left; display:flex; gap:12px; align-items:center;">'
+    + '<div style="background:#fff9e6; border:1px solid #ffe58f; border-radius:8px; padding:12px 16px; margin-bottom:12px; text-align:left; display:flex; gap:12px; align-items:center;">'
     + '<span style="font-size:1.4rem;">⚠️</span>'
     + '<p style="margin:0; font-size:0.85rem; color:#856404; line-height:1.5;">'
     + '<strong>Disclaimer:</strong> Mini posts displayed in NextGen Realtors are only for advertisement purpose. '
     + 'NextGen Realtors do not take any accountability on the legal issues of the properties details posted in Mini Posts.'
     + '</p></div>'
-    + '<div style="margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">' + catHtml + '</div>'
-    + '<div style="background:white;border-radius:12px;padding:16px;margin-bottom:30px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(0,0,0,0.03);">' + areaHtml + '</div>'
+    + '<div style="background:var(--white);border:1px solid var(--light-grey);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left;box-shadow:var(--shadow-sm);">'
+    + '  <h3 class="text-navy" style="margin-bottom:12px;font-size:1.3rem;">List Your Property with Ease!</h3>'
+    + '  <p style="margin-bottom:16px;color:var(--dark-grey);font-size:0.95rem;line-height:1.5;">Have a property to sell or rent? Share your details with us on WhatsApp, and we’ll help you promote it to the right audience.</p>'
+    + '  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:8px;margin-bottom:20px;font-weight:600;color:var(--navy);">'
+    + '    <div>✔ Fast Listing</div>'
+    + '    <div>✔ Verified Leads</div>'
+    + '    <div>✔ Maximum Visibility</div>'
+    + '  </div>'
+  + '  <p style="margin-bottom:0; color:var(--dark-grey); font-size:1rem; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">'
+  + '    Contact us on WhatsApp '
+  + '    <a href="https://wa.me/917569844192" target="_blank" class="btn btn-primary" style="display:inline-flex; align-items:center; padding:6px 16px; font-size:0.95rem; border-radius:6px; font-weight:700;">'
+  + '      7569844192'
+  + '    </a>'
+  + '    now.'
+  + '  </p>'
+    + '</div>'
+    + '<div style="margin-bottom:15px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">' + catHtml + '</div>'
+    + '<div style="background:white;border-radius:12px;padding:12px;margin-bottom:20px;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(0,0,0,0.03);">' + areaHtml + '</div>'
     + '<style>.mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:left;}'
     + '@media(max-width:1024px){.mp-grid{grid-template-columns:repeat(3,1fr);}}'
     + '@media(max-width:768px){.mp-grid{grid-template-columns:repeat(2,1fr);}}'
@@ -2024,7 +2071,14 @@ function mpDrawUI() {
 
 function mpSelectCat(cat) {
   window._activeMinipostCat = cat;
-  window._activeMinipostArea = null;
+  
+  // Set Gachibowli as default area when switching categories
+  if (window._mpAreas && window._mpAreas.includes('Gachibowli')) {
+    window._activeMinipostArea = 'Gachibowli';
+  } else {
+    window._activeMinipostArea = null;
+  }
+  
   window._mpPage = 1;
   mpDrawUI();
 }
@@ -2052,9 +2106,19 @@ async function renderMiniPosts() {
   const content = document.getElementById('page-content');
   content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div><p>Securely fetching posts...</p></div>';
   try {
-    window._mpRawData = await DB.miniposts.get();
-    // Reset area when page freshly loads
-    window._activeMinipostArea = null;
+    const [posts, areas] = await Promise.all([
+      DB.miniposts.get(),
+      DB.mp_areas.get()
+    ]);
+    window._mpRawData = posts;
+    window._mpAreas = (areas || []).map(a => a.name);
+
+    // Set default area
+    if (window._mpAreas && window._mpAreas.includes('Gachibowli')) {
+      window._activeMinipostArea = 'Gachibowli';
+    } else {
+      window._activeMinipostArea = null;
+    }
     window._mpPage = 1;
     if (!window._activeMinipostCat) window._activeMinipostCat = 'House for Sale';
     mpDrawUI();
