@@ -27,6 +27,11 @@ document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) {
     e.target.classList.remove('open');
   }
+
+  // Close navigation dropdowns when clicking outside
+  if (!e.target.closest('.nav-dropdown')) {
+    document.querySelectorAll('.nav-dropdown.active').forEach(d => d.classList.remove('active'));
+  }
 });
 
 // FAB — stop click from bubbling to overlay close listener
@@ -466,6 +471,11 @@ const pages = {
 };
 
 function navigate(path) {
+  // Ensure dropdowns are closed upon navigation
+  document.querySelectorAll('.nav-dropdown.active').forEach(d => d.classList.remove('active'));
+  // Close mobile nav if open
+  document.querySelector('.nav-links')?.classList.remove('mobile-open');
+
   history.pushState({ path }, '', `#${path}`);
   loadPage(path);
 }
