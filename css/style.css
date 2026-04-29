@@ -1232,6 +1232,7 @@ textarea.form-control {
   margin-bottom: 24px;
   font-size: 1.05rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+  text-align: left;
 }
 
 .about-social {
