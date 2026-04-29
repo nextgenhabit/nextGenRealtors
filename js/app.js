@@ -211,13 +211,19 @@ async function renderDetail(type, id) {
     : (item.imageUrl ? [item.imageUrl] : []);
 
   const galleryHtml = imgs.length > 0
-    ? `<div class="detail-gallery">
-        ${imgs.map((src, i) =>
-      `<img class="detail-gallery-img${i === 0 ? ' active' : ''}"
-                src="${esc(src)}" alt="Photo ${i + 1}"
-                onclick="setGalleryActive(this)"
-                onerror="this.style.display='none'">`
-    ).join('')}
+    ? `<div class="detail-gallery-container">
+        <div class="detail-main-image-wrap">
+          <img id="detail-main-img" src="${esc(imgs[0])}" alt="Property Photo 1">
+        </div>
+        ${imgs.length > 1 ? `
+        <div class="detail-thumbnails">
+          ${imgs.map((src, i) =>
+            `<img class="detail-thumb${i === 0 ? ' active' : ''}"
+                  src="${esc(src)}" alt="Thumbnail ${i + 1}"
+                  onclick="setGalleryActive(this)"
+                  onerror="this.style.display='none'">`
+          ).join('')}
+        </div>` : ''}
        </div>`
     : `<div class="detail-placeholder-icon">${icon}</div>`;
 
@@ -344,11 +350,26 @@ function viewDetailOrAuth(type, id) {
 }
 
 /** Clicking any image in the detail gallery marks it as the "active" (large) image */
-function setGalleryActive(imgEl) {
-  const gallery = imgEl.closest('.detail-gallery');
-  if (!gallery) return;
-  gallery.querySelectorAll('.detail-gallery-img').forEach(i => i.classList.remove('active'));
-  imgEl.classList.add('active');
+/** Transition the main image and mark thumbnail as active */
+function setGalleryActive(thumbEl) {
+  const mainImg = document.getElementById('detail-main-img');
+  if (!mainImg || thumbEl.classList.contains('active')) return;
+
+  const container = thumbEl.closest('.detail-gallery-container');
+  if (!container) return;
+
+  // 1. Mark active thumbnail
+  container.querySelectorAll('.detail-thumb').forEach(t => t.classList.remove('active'));
+  thumbEl.classList.add('active');
+
+  // 2. Fade transition for main image
+  mainImg.style.opacity = '0';
+  setTimeout(() => {
+    mainImg.src = thumbEl.src;
+    mainImg.onload = () => {
+      mainImg.style.opacity = '1';
+    };
+  }, 250);
 }
 
 function buildDetailSpecs(item, type) {
