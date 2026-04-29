@@ -423,10 +423,19 @@ async function confirmDelete() {
       if (window._currentPage) window._currentPage();
       applyAdminUI();
     } else if (kind === 'review') {
-      await DB.reviews.del(id);
-      showToast('Review deleted.', 'success');
-      renderReviews();
-      applyAdminUI();
+      const review = (window._reviewsList || []).find(r => r.id === id);
+      const currentUser = Auth.currentUser();
+      const isAdmin = Admin.isLoggedIn();
+      const isOwner = currentUser && review && review.uid === currentUser.uid;
+
+      if (isOwner || isAdmin) {
+        await DB.reviews.del(id);
+        showToast('Review deleted.', 'success');
+        renderReviews();
+        applyAdminUI();
+      } else {
+        showToast('You are not authorized to delete this review.', 'error');
+      }
     }
   } catch (e) {
     showToast('Failed to delete item.', 'error');
@@ -1075,8 +1084,9 @@ function changeListingPage(type, direction) {
 }
 
 async function renderReviews() {
-  // Show a loading state
-  document.getElementById('page-content').innerHTML = `
+  const content = document.getElementById('page-content');
+  // Initial loading state
+  content.innerHTML = `
   <div class="hero">
     <div class="container" style="position:relative;z-index:1">
       <p class="hero-eyebrow">Client Reviews</p>
@@ -1088,6 +1098,9 @@ async function renderReviews() {
   `;
 
   const reviews = await DB.reviews.get();
+  window._reviewsList = reviews; // Cache for editing
+  const currentUser = Auth.currentUser();
+  const isAdmin = Admin.isLoggedIn();
 
   if (window.I18n && I18n.currentLanguage !== 'en') {
     for (let r of reviews) {
@@ -1096,21 +1109,30 @@ async function renderReviews() {
     }
   }
 
-  const cardHtml = r => `
-  <div class="review-card" data-id="${r.id}">
-    <div class="review-quote">"</div>
-    <div class="star-rating">${renderStars(r.rating)}</div>
-    ${r.photoUrl ? `<img src="${esc(r.photoUrl)}" alt="Review Photo" style="width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);margin-top:12px;margin-bottom:12px;box-shadow:var(--shadow-sm)">` : ''}
-    <p class="review-text">${esc(r.message)}</p>
-    <div class="reviewer-info">
-      <div class="reviewer-avatar">${r.name.charAt(0).toUpperCase()}</div>
-      <div>
-        <div class="reviewer-name">${esc(r.name)}</div>
-        <div class="reviewer-date">${r.date || ''}</div>
+  const cardHtml = r => {
+    const isOwner = currentUser && r.uid === currentUser.uid;
+    const canDelete = isOwner || isAdmin;
+    const canEdit = isOwner; // Only owner can edit content
+
+    return `
+    <div class="review-card" data-id="${r.id}">
+      <div class="review-quote">"</div>
+      <div class="star-rating">${renderStars(r.rating)}</div>
+      ${r.photoUrl ? `<img src="${esc(r.photoUrl)}" alt="Review Photo" style="width:100%;height:180px;object-fit:cover;border-radius:var(--radius-md);margin-top:12px;margin-bottom:12px;box-shadow:var(--shadow-sm)">` : ''}
+      <p class="review-text">${esc(r.message)}</p>
+      <div class="reviewer-info">
+        <div class="reviewer-avatar">${(r.name || 'U').charAt(0).toUpperCase()}</div>
+        <div>
+          <div class="reviewer-name">${esc(r.name)}</div>
+          <div class="reviewer-date">${r.date || ''}</div>
+        </div>
       </div>
-    </div>
-    <button class="btn-icon btn-del review-del-btn" title="Delete review" onclick="deleteReview('${r.id}')">🗑️</button>
-  </div>`;
+      <div class="review-actions">
+        ${canEdit ? `<button class="btn-icon btn-edit" title="Edit review" onclick="editReview('${r.id}')">✏️</button>` : ''}
+        ${canDelete ? `<button class="btn-icon btn-del review-del-btn" title="Delete review" onclick="deleteReview('${r.id}')">🗑️</button>` : ''}
+      </div>
+    </div>`;
+  };
 
   const avgRating = reviews.length
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
@@ -1135,9 +1157,9 @@ async function renderReviews() {
       : `<div class="empty-state"><div class="empty-icon">💬</div><h3>No reviews yet</h3><p>Be the first to share your experience!</p></div>`}
 
       <!-- Submit Review Form -->
-      <div style="max-width:600px;margin:0 auto;background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-md);border:1px solid var(--light-grey)">
-        <h3 class="text-navy mb-8" style="font-size:1.5rem">Share Your Experience</h3>
-        <p class="mb-24" style="color:var(--mid-grey);font-size:0.9rem">We'd love to hear about your property journey!</p>
+      <div id="review-form-container" style="max-width:600px;margin:0 auto;background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-md);border:1px solid var(--light-grey)">
+        <h3 class="text-navy mb-8" id="rv-form-title" style="font-size:1.5rem">Share Your Experience</h3>
+        <p class="mb-24" id="rv-form-desc" style="color:var(--mid-grey);font-size:0.9rem">We'd love to hear about your property journey!</p>
         <div class="form-group">
           <label class="form-label">Your Name *</label>
           <input class="form-control" id="rv-name" placeholder="e.g. Priya Sharma">
@@ -1162,10 +1184,81 @@ async function renderReviews() {
             <img id="rv-image-preview" style="display:none;width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--light-grey)">
           </div>
         </div>
-        <button class="btn btn-primary" onclick="submitReview()" id="rv-submit-btn">🌟 Submit Review</button>
+        <div style="display:flex;gap:12px;margin-top:20px;">
+          <button class="btn btn-primary" style="flex:1" onclick="submitReview()" id="rv-submit-btn">🌟 Submit Review</button>
+          <button class="btn btn-ghost" id="rv-cancel-btn" style="display:none" onclick="cancelReviewEdit()">Cancel</button>
+        </div>
       </div>
     </div>
   </section>`;
+}
+
+let _editingReviewId = null;
+
+function editReview(id) {
+  const review = window._reviewsList.find(r => r.id === id);
+  if (!review) return;
+
+  _editingReviewId = id;
+
+  // Fill form
+  const nameInput = document.getElementById('rv-name');
+  const msgInput = document.getElementById('rv-message');
+  const titleEl = document.getElementById('rv-form-title');
+  const descEl = document.getElementById('rv-form-desc');
+  const submitBtn = document.getElementById('rv-submit-btn');
+  const cancelBtn = document.getElementById('rv-cancel-btn');
+  const previewImg = document.getElementById('rv-image-preview');
+
+  if (nameInput) nameInput.value = review.name;
+  if (msgInput) msgInput.value = review.message;
+  if (titleEl) titleEl.innerText = 'Edit Your Review';
+  if (descEl) descEl.innerText = 'Update your feedback and rating below.';
+  if (submitBtn) submitBtn.innerText = '✨ Update Review';
+  if (cancelBtn) cancelBtn.style.display = 'block';
+
+  // Set rating
+  const radio = document.querySelector(`input[name="rv-rating"][value="${review.rating}"]`);
+  if (radio) radio.checked = true;
+
+  // Set image
+  if (review.photoUrl) {
+    pendingReviewImage = review.photoUrl;
+    if (previewImg) {
+      previewImg.src = review.photoUrl;
+      previewImg.style.display = 'block';
+    }
+  } else {
+    pendingReviewImage = '';
+    if (previewImg) previewImg.style.display = 'none';
+  }
+
+  // Scroll to form
+  const form = document.getElementById('review-form-container');
+  if (form) form.scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelReviewEdit() {
+  _editingReviewId = null;
+  const nameInput = document.getElementById('rv-name');
+  const msgInput = document.getElementById('rv-message');
+  const titleEl = document.getElementById('rv-form-title');
+  const descEl = document.getElementById('rv-form-desc');
+  const submitBtn = document.getElementById('rv-submit-btn');
+  const cancelBtn = document.getElementById('rv-cancel-btn');
+  const previewImg = document.getElementById('rv-image-preview');
+
+  if (nameInput) nameInput.value = '';
+  if (msgInput) msgInput.value = '';
+  if (titleEl) titleEl.innerText = 'Share Your Experience';
+  if (descEl) descEl.innerText = "We'd love to hear about your property journey!";
+  if (submitBtn) submitBtn.innerText = '🌟 Submit Review';
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  if (previewImg) previewImg.style.display = 'none';
+  pendingReviewImage = '';
+  
+  // Reset stars
+  document.querySelectorAll('input[name="rv-rating"]').forEach(r => r.checked = false);
 }
 
 // ---- Review Image Preview Helper ----
@@ -1190,6 +1283,13 @@ function previewReviewImage(event) {
 }
 
 async function submitReview() {
+  const user = Auth.currentUser();
+  if (!user) {
+    Auth.openSignInModal();
+    showToast('Please sign in to share a review.', 'error');
+    return;
+  }
+
   const name = document.getElementById('rv-name')?.value.trim();
   const rating = parseInt(document.querySelector('input[name="rv-rating"]:checked')?.value || '0');
   const message = document.getElementById('rv-message')?.value.trim();
@@ -1202,20 +1302,32 @@ async function submitReview() {
   if (btn) btn.disabled = true;
 
   try {
-    await DB.reviews.add({
+    const reviewData = {
       name,
       rating,
       message,
       photoUrl: pendingReviewImage,
-      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
-    });
+      updatedAt: new Date().toISOString()
+    };
+
+    if (_editingReviewId) {
+      await DB.reviews.update(_editingReviewId, reviewData);
+      showToast('✨ Review updated successfully!', 'success');
+      _editingReviewId = null;
+    } else {
+      reviewData.uid = user.uid;
+      reviewData.userEmail = user.email;
+      reviewData.date = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      reviewData.createdAt = new Date().toISOString();
+      await DB.reviews.add(reviewData);
+      showToast('🌟 Thank you for your review!', 'success');
+    }
 
     pendingReviewImage = ''; // Clear after successful submission
-    showToast('🌟 Thank you for your review!', 'success');
     renderReviews();
     applyAdminUI();
   } catch (e) {
-    showToast('Failed to submit review. Try again.', 'error');
+    showToast('Failed to save review. Try again.', 'error');
     if (btn) btn.disabled = false;
   }
 }
