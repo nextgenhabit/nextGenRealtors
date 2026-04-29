@@ -162,6 +162,25 @@ button {
   color: var(--gold);
 }
 
+/* ---- Spacing & Typography Utilities ---- */
+.mt-8 { margin-top: 8px !important; }
+.mt-16 { margin-top: 16px !important; }
+.mt-24 { margin-top: 24px !important; }
+.mt-32 { margin-top: 32px !important; }
+.mb-8 { margin-bottom: 8px !important; }
+.mb-16 { margin-bottom: 16px !important; }
+.mb-24 { margin-bottom: 24px !important; }
+.mb-32 { margin-bottom: 32px !important; }
+.pt-16 { padding-top: 16px !important; }
+.pb-16 { padding-bottom: 16px !important; }
+.w-100 { width: 100% !important; }
+.text-center { text-align: center !important; }
+.text-navy { color: var(--navy) !important; }
+.text-gold { color: var(--gold) !important; }
+.text-danger { color: var(--danger) !important; }
+.bg-white { background-color: var(--white) !important; }
+.bg-off-white { background-color: var(--off-white) !important; }
+
 /* ---- Buttons ---- */
 .btn {
   display: inline-flex;
@@ -209,6 +228,19 @@ button {
 
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--mid-grey);
+  border: 1px solid var(--light-grey);
+}
+
+.btn-outline:hover {
+  background: var(--off-white);
+  color: var(--navy);
+  border-color: var(--navy);
   transform: translateY(-2px);
 }
 
@@ -2824,5 +2856,38 @@ textarea.form-control {
 @media (max-width: 600px) {
   .cat-card-grid { grid-template-columns: 1fr; }
   .cat-card { height: 280px; }
+}
+
+/* WhatsApp FAB */
+.whatsapp-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: #25D366;
+  color: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+  z-index: 1000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.whatsapp-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(37, 211, 102, 0.6);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .whatsapp-fab {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+  }
 }
 

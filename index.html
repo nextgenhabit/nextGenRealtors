@@ -23,15 +23,15 @@
   <!-- ====== NAVIGATION ====== -->
   <nav id="navbar">
     <div class="nav-inner">
-      <div class="nav-logo" style="position:relative;">
+      <div class="nav-logo" style="position:relative; cursor:pointer;" onclick="navigate('about')">
         <img id="site-logo-img" src="images/Logo.png" alt="NextGen Realtors Logo"
           style="height:40px; margin-right:8px; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"
           onerror="if(this.src.endsWith('.png')){this.src='images/Logo.jpg';}else if(this.src.endsWith('.jpg')){this.src='images/Logo.jpeg';}else{this.style.display='none';}">
         <div class="nav-logo-icon" id="site-logo-icon" style="display:none;"></div>
         <div class="nav-logo-text">
           <span class="nav-logo-name">
-            <span style="color: var(--navy);">NextGen</span>
-            <span style="color: var(--gold);">Realtors</span>
+            <span class="text-navy">NextGen</span>
+            <span class="text-gold">Realtors</span>
           </span>
           <span class="nav-logo-tagline">Property Advisor</span>
         </div>
@@ -131,8 +131,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('admin-login-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('admin-login-modal')">Cancel</button>
         <button class="btn btn-primary" id="admin-login-submit-btn" onclick="handleAdminLogin()">🔓 Login</button>
       </div>
     </div>
@@ -151,8 +150,7 @@
         <div id="prop-form-fields"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('prop-form-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('prop-form-modal')">Cancel</button>
         <button class="btn btn-primary" id="prop-form-submit" onclick="submitPropertyForm()">✅ Add Listing</button>
       </div>
     </div>
@@ -183,8 +181,7 @@
           log in again.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('admin-logout-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('admin-logout-modal')">Cancel</button>
         <button class="btn btn-danger" onclick="confirmLogout()">🔒 Yes, Logout</button>
       </div>
     </div>
@@ -217,8 +214,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('admin-change-pw-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('admin-change-pw-modal')">Cancel</button>
         <button class="btn btn-primary" id="cpw-submit-btn" onclick="submitChangePassword()">💾 Save Changes</button>
       </div>
     </div>
@@ -245,8 +241,7 @@
         </div>
       </div>
       <div class="modal-footer" id="forgot-pw-footer-1">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('admin-forgot-pw-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('admin-forgot-pw-modal')">Cancel</button>
         <button class="btn btn-primary" id="fpw-verify-btn" onclick="verifySecurityAnswer()">Verify Answer</button>
       </div>
 
@@ -278,8 +273,7 @@
         <p style="color:var(--mid-grey);font-size:0.9rem">This action cannot be undone.</p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('delete-confirm-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('delete-confirm-modal')">Cancel</button>
         <button class="btn btn-danger" id="delete-confirm-btn">🗑️ Yes, Delete</button>
       </div>
     </div>
@@ -335,8 +329,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('edit-contact-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('edit-contact-modal')">Cancel</button>
         <button class="btn btn-primary" id="ec-submit" onclick="submitEditContact()">💾 Save Changes</button>
       </div>
     </div>
@@ -391,8 +384,7 @@
       </div>
       <div class="modal-footer"
         style="position:sticky; bottom:0; background:white; padding-top:15px; border-top:1px solid var(--light-grey)">
-        <button class="btn btn-ghost" style="color:var(--mid-grey);border-color:var(--light-grey)"
-          onclick="closeModal('edit-about-modal')">Cancel</button>
+        <button class="btn btn-outline" onclick="closeModal('edit-about-modal')">Cancel</button>
         <button class="btn btn-primary" id="ea-submit" onclick="submitEditAbout()">💾 Save Changes</button>
       </div>
     </div>
@@ -415,7 +407,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeModal('mp-areas-modal')">Close</button>
+        <button class="btn btn-outline" onclick="closeModal('mp-areas-modal')">Close</button>
       </div>
     </div>
   </div>
@@ -455,6 +447,13 @@
       </div>
     </div>
   </div>
+
+  <!-- ====== WHATSAPP FAB ====== -->
+  <a href="https://wa.me/917569844192?text=Hi%20NextGen%20Realtors." id="whatsapp-fab" class="whatsapp-fab" target="_blank" rel="noopener" title="Chat with us on WhatsApp">
+    <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+    </svg>
+  </a>
 
   <!-- ====== SCRIPTS ====== -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>

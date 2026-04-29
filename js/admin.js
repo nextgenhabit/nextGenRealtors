@@ -332,7 +332,7 @@ async function renderMPAreaList() {
       container.innerHTML = areas.map(a => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #eee">
           <span style="font-weight:500; color:var(--navy)">${esc(a.name)}</span>
-          <button class="btn btn-sm" style="background:var(--red-tint); color:var(--red); border:none; padding:4px 10px" onclick="deleteMPArea('${a.id}')">🗑️ Delete</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteMPArea('${a.id}')">🗑️ Delete</button>
         </div>
       `).join('');
     }

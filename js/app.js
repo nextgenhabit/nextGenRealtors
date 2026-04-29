@@ -168,7 +168,7 @@ function renderPropertyCard(item, type) {
 
 function buildCardSpecs(item, type) {
   const tag = (icon, val) => val ? `<span class="spec-tag">${icon} ${esc(val)}</span>` : '';
-  if (type === 'plots') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('📐', item.area) + tag('🧭', item.facing);
+  if (type === 'plots') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + (item.lpNumber ? tag('📝', 'LP: ' + item.lpNumber) : '') + tag('✅', item.approvedBy) + (item.reraApproved === 'Yes' ? tag('🏛️', 'RERA Approved') : '');
   if (type === 'flats') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('🛏️', item.bhk) + tag('📐', item.area) + tag('🎨', item.furnishing);
   if (type === 'apartments') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('🏢', (item.blocks ? item.blocks + ' Blocks' : '')) + tag('📏', item.flatSizes) + tag('🏠', (item.totalUnits ? item.totalUnits + ' Units' : ''));
   if (type === 'villas') return tag('📍', [item.village, item.district].filter(Boolean).join(', ')) + tag('🛏️', item.bedrooms) + tag('🌳', item.landArea) + (item.hasPool ? `<span class="spec-tag">🏊 Pool</span>` : '') + (item.hasGarden ? `<span class="spec-tag">🌿 Garden</span>` : '');
@@ -597,9 +597,9 @@ async function renderAbout() {
   <!-- Social Media Handles -->
   <section class="section" style="background:var(--white); padding-bottom:0;">
     <div class="container">
-      <div class="section-header" style="margin-bottom:40px;">
-        <p class="hero-eyebrow" style="color:var(--gold);">CONNECT WITH US</p>
-        <h2 style="color:var(--navy);">Social Media Handles</h2>
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">CONNECT WITH US</p>
+        <h2 class="text-navy">Social Media Handles</h2>
         <p>Stay updated with our latest property listings and real estate insights.</p>
       </div>
       <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap; margin-bottom:40px;">
@@ -610,11 +610,15 @@ async function renderAbout() {
           <span>WhatsApp</span>
         </a>
         <a href="https://www.youtube.com/channel/UC06qF2z-4PF2_9wxP0uuLUA" target="_blank" class="social-card fade-up" style="animation-delay:0.1s">
-          <div class="social-card-icon yt">▶️</div>
+          <div class="social-card-icon yt">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </div>
           <span>YouTube</span>
         </a>
         <a href="https://www.instagram.com/nextgenrealtors4/" target="_blank" class="social-card fade-up" style="animation-delay:0.2s">
-          <div class="social-card-icon insta">📸</div>
+          <div class="social-card-icon insta">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </div>
           <span>Instagram</span>
         </a>
         <a href="https://www.facebook.com/nextGenRealtorsHub" target="_blank" class="social-card fade-up" style="animation-delay:0.3s">
@@ -624,16 +628,16 @@ async function renderAbout() {
           <span>Facebook</span>
         </a>
       </div>
-      <div style="border-top:1px solid #eee; margin-top:20px;"></div>
+      <div class="mt-24" style="border-top:1px solid var(--light-grey);"></div>
     </div>
   </section>
 
   <!-- Find Your Perfect Property Categories -->
   <section class="section" style="background:var(--white); padding-top:40px;">
     <div class="container">
-      <div class="section-header" style="margin-bottom:48px;">
-        <p class="hero-eyebrow" style="color:#AF7343;">DISCOVER OUR PORTFOLIO</p>
-        <h2 style="color:var(--navy);">Find Your Perfect Property</h2>
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">DISCOVER OUR PORTFOLIO</p>
+        <h2 class="text-navy">Find Your Perfect Property</h2>
         <p>Explore our curated selection of premium real estate across Hyderabad's most sought-after locations.</p>
       </div>
       <div class="cat-card-grid">
@@ -676,8 +680,8 @@ async function renderAbout() {
         <!-- Mission -->
         <div class="mv-row fade-up">
           <div class="mv-content">
-            <h2 style="color:var(--navy);margin-bottom:16px;">${t('about_mission')}</h2>
-            <p style="color:var(--dark-grey);line-height:1.8;font-size:1.05rem;" id="a-disp-mission">
+            <h2 class="text-navy mb-16">${t('about_mission')}</h2>
+            <p style="color:var(--text-dark);line-height:1.8;font-size:1.05rem;" id="a-disp-mission">
               ${safeMission}
             </p>
           </div>
@@ -689,8 +693,8 @@ async function renderAbout() {
         <!-- Vision -->
         <div class="mv-row reverse fade-up fade-up-delay-1" style="margin-top:60px;">
           <div class="mv-content">
-            <h2 style="color:var(--navy);margin-bottom:16px;">${t('about_vision')}</h2>
-            <p style="color:var(--dark-grey);line-height:1.8;font-size:1.05rem;" id="a-disp-vision">
+            <h2 class="text-navy mb-16">${t('about_vision')}</h2>
+            <p style="color:var(--text-dark);line-height:1.8;font-size:1.05rem;" id="a-disp-vision">
                ${safeVision}
             </p>
           </div>
@@ -705,9 +709,9 @@ async function renderAbout() {
   <!-- Our Clients -->
   <section class="section" style="background:var(--off-white); text-align:center;">
     <div class="container">
-      <p class="hero-eyebrow" style="color:#FCA140;">ASSOCIATIONS</p>
-      <h2 style="color:var(--navy);margin-bottom:8px;">Proudly Collaborating With</h2>
-      <p style="color:var(--dark-grey);margin-bottom:32px;">Driving success through trusted partnerships and exceptional service.</p>
+      <p class="hero-eyebrow text-gold">ASSOCIATIONS</p>
+      <h2 class="text-navy mb-8">Proudly Collaborating With</h2>
+      <p class="mb-32" style="color:var(--text-dark);">Driving success through trusted partnerships and exceptional service.</p>
       
       ${Admin.isLoggedIn() ? `<div style="text-align:right; margin-bottom: 20px;"><button class="btn btn-primary btn-sm" onclick="showPropertyForm('clients')">➕ Add Client</button></div>` : ''}
       
@@ -728,9 +732,9 @@ async function renderAbout() {
   ${onDemandApartments.length > 0 ? `
   <section class="section" style="background:var(--off-white);">
     <div class="container">
-      <div class="section-header" style="margin-bottom:48px;">
-        <p class="hero-eyebrow" style="color:var(--gold);">FEATURED</p>
-        <h2 style="color:var(--navy);">Apartments on Demand</h2>
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Apartments on Demand</h2>
         <p>Explore our highly sought-after apartment projects available for a limited time.</p>
       </div>
       <div class="properties-grid" style="text-align:left;">
@@ -742,9 +746,9 @@ async function renderAbout() {
   ${onDemandPlots.length > 0 ? `
   <section class="section" style="background:var(--white);">
     <div class="container">
-      <div class="section-header" style="margin-bottom:48px;">
-        <p class="hero-eyebrow" style="color:var(--gold);">FEATURED</p>
-        <h2 style="color:var(--navy);">Plots on Demand</h2>
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Plots on Demand</h2>
         <p>Explore our highly sought-after plot projects available for a limited time.</p>
       </div>
       <div class="properties-grid" style="text-align:left;">
@@ -1113,8 +1117,8 @@ async function renderReviews() {
 
       <!-- Submit Review Form -->
       <div style="max-width:600px;margin:0 auto;background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-md);border:1px solid var(--light-grey)">
-        <h3 style="color:var(--navy);margin-bottom:8px;font-size:1.5rem">Share Your Experience</h3>
-        <p style="color:var(--mid-grey);font-size:0.9rem;margin-bottom:24px">We'd love to hear about your property journey!</p>
+        <h3 class="text-navy mb-8" style="font-size:1.5rem">Share Your Experience</h3>
+        <p class="mb-24" style="color:var(--mid-grey);font-size:0.9rem">We'd love to hear about your property journey!</p>
         <div class="form-group">
           <label class="form-label">Your Name *</label>
           <input class="form-control" id="rv-name" placeholder="e.g. Priya Sharma">
@@ -1132,7 +1136,7 @@ async function renderReviews() {
         <div class="form-group">
           <label class="form-label">Attach a Photo <span style="color:var(--mid-grey);font-weight:400">(optional)</span></label>
           <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
-            <label class="btn btn-ghost" for="rv-image" style="cursor:pointer;border-color:var(--light-grey)">
+            <label class="btn btn-outline" for="rv-image" style="cursor:pointer;">
               📷 Browse Image
               <input type="file" id="rv-image" accept="image/*" style="display:none" onchange="previewReviewImage(event)">
             </label>
@@ -1600,13 +1604,19 @@ async function renderContact() {
 
       <!-- Map placeholder -->
       <div class="map-section">
-        <h3 style="color:var(--navy);margin-bottom:20px;font-family:'Playfair Display',serif;font-size:1.5rem">📍 Find Us</h3>
+        <h3 class="text-navy mb-24" style="font-family:'Playfair Display',serif;font-size:1.5rem">📍 Find Us</h3>
         <div class="map-container">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3888.0070660836927!2d77.5945627!3d12.9715987!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf8dfc3e8517e4fe0!2sBrigade%20Road%2C%20Bangalore!5e0!3m2!1sen!2sin!4v1700000000000"
+            src="https://www.google.com/maps?q=NextGen+Future+Works+Pvt+Ltd&output=embed"
             loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade">
+            referrerpolicy="no-referrer-when-downgrade"
+            style="border:0; width:100%; height:100%; pointer-events:auto;">
           </iframe>
+        </div>
+        <div class="text-center mt-16">
+          <a href="https://share.google/Ccta8QgYZJ7mbEP5f" target="_blank" rel="noopener" class="btn btn-secondary">
+            📍 Open in Google Maps
+          </a>
         </div>
       </div>
     </div>
