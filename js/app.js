@@ -2028,7 +2028,7 @@ function mpDrawUI() {
     }).join('');
   }
 
-  const isAdmin = (typeof Admin !== 'undefined' && Admin.isLoggedIn());
+  // isAdmin already declared at top of function
   content.innerHTML = '<div class="hero"><div class="container" style="position:relative;z-index:1">'
     + '<p class="hero-eyebrow">PREMIUM SECURE ACCESS</p><h1>Mini Posts</h1></div></div>'
     + '<section class="section" style="background:var(--off-white);min-height:80vh;text-align:center;padding-top:30px;">'
