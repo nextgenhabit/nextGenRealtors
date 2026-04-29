@@ -131,7 +131,7 @@ function renderStars(rating, max = 5) {
 
 // ---- Image with fallback ----
 function imgOrIcon(url, icon = '🏠') {
-  if (url) return `<img src="${esc(url)}" alt="Property" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+  if (url) return `<img src="${esc(url)}" alt="Property" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
     <div class="card-img-placeholder" style="display:none">${icon}</div>`;
   return `<div class="card-img-placeholder">${icon}</div>`;
 }
@@ -528,14 +528,12 @@ async function renderAbout() {
 
   const info = aboutData.length > 0 ? aboutData[0] : defaultAbout;
 
+  // Parallelize dynamic translations for better performance
   if (window.I18n && I18n.currentLanguage !== 'en') {
-    info.name = await I18n.translateDynamic(info.name);
-    info.tagline = await I18n.translateDynamic(info.tagline);
-    info.title = await I18n.translateDynamic(info.title);
-    info.bio1 = await I18n.translateDynamic(info.bio1);
-    info.bio2 = await I18n.translateDynamic(info.bio2);
-    info.mission = await I18n.translateDynamic(info.mission);
-    info.vision = await I18n.translateDynamic(info.vision);
+    const tKeys = ['name', 'tagline', 'title', 'bio1', 'bio2', 'mission', 'vision'];
+    const tTasks = tKeys.map(k => I18n.translateDynamic(info[k]));
+    const tValues = await Promise.all(tTasks);
+    tKeys.forEach((k, i) => { if (info[k]) info[k] = tValues[i]; });
   }
 
   // Sanitize line breaks so they don't break the template string parsing
@@ -707,7 +705,7 @@ async function renderAbout() {
             </p>
           </div>
           <div class="mv-image-wrap">
-            <img src="images/mission_statement.png" alt="Our Mission" style="width:100%;height:350px;object-fit:cover;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.1);display:block;">
+            <img src="images/mission_statement.png" alt="Our Mission" loading="lazy" style="width:100%;height:350px;object-fit:cover;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.1);display:block;">
           </div>
         </div>
 
@@ -720,7 +718,7 @@ async function renderAbout() {
             </p>
           </div>
           <div class="mv-image-wrap">
-            <img src="images/vision_statement.png" alt="Our Vision" style="width:100%;height:350px;object-fit:cover;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.1);display:block;">
+            <img src="images/vision_statement.png" alt="Our Vision" loading="lazy" style="width:100%;height:350px;object-fit:cover;border-radius:12px;box-shadow:0 15px 30px rgba(0,0,0,0.1);display:block;">
           </div>
         </div>
       </div>
@@ -740,7 +738,7 @@ async function renderAbout() {
         ${clientsData.map(c => `
           <div class="fade-up" style="display:flex; flex-direction:column; align-items:center; width: 140px;">
             <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background:var(--white); box-shadow:0 10px 20px rgba(0,0,0,0.05); margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
-              ${c.imageUrl ? `<img src="${esc(c.imageUrl)}" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : '<span style="font-size:2rem;">🤝</span>'}
+              ${c.imageUrl ? `<img src="${esc(c.imageUrl)}" loading="lazy" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : '<span style="font-size:2rem;">🤝</span>'}
             </div>
             <p style="font-weight:600; color:var(--navy); font-size:0.95rem; text-align:center; word-break:break-word;">${esc(c.title)}</p>
             ${Admin.isLoggedIn() ? `<div style="display:flex; gap:4px; margin-top:8px;"><button class="btn-icon " style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Edit" onclick="editProperty('clients','${c.id}')">✏️</button><button class="btn-icon" style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Delete" onclick="deleteProperty('clients','${c.id}')">🗑️</button></div>` : ''}
