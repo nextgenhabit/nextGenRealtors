@@ -600,6 +600,34 @@ async function renderAbout() {
     </div>
   </section>
 
+  ${onDemandApartments.length > 0 ? `
+  <section class="section" style="background:var(--off-white);">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Apartments on Demand</h2>
+        <p>Explore our highly sought-after apartment projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandApartments.map(p => renderPropertyCard(p, 'apartments')).join('')}
+      </div>
+    </div>
+  </section>` : ''}
+
+  ${onDemandPlots.length > 0 ? `
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Plots on Demand</h2>
+        <p>Explore our highly sought-after plot projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandPlots.map(p => renderPropertyCard(p, 'plots')).join('')}
+      </div>
+    </div>
+  </section>` : ''}
+
   <!-- Expertise -->
   <section class="section" style="background:var(--off-white)">
     <div class="container">
@@ -767,33 +795,6 @@ async function renderAbout() {
     </div>
   </section>
 
-  ${onDemandApartments.length > 0 ? `
-  <section class="section" style="background:var(--off-white);">
-    <div class="container">
-      <div class="section-header mb-32">
-        <p class="hero-eyebrow text-gold">FEATURED</p>
-        <h2 class="text-navy">Apartments on Demand</h2>
-        <p>Explore our highly sought-after apartment projects available for a limited time.</p>
-      </div>
-      <div class="properties-grid" style="text-align:left;">
-        ${onDemandApartments.map(p => renderPropertyCard(p, 'apartments')).join('')}
-      </div>
-    </div>
-  </section>` : ''}
-
-  ${onDemandPlots.length > 0 ? `
-  <section class="section" style="background:var(--white);">
-    <div class="container">
-      <div class="section-header mb-32">
-        <p class="hero-eyebrow text-gold">FEATURED</p>
-        <h2 class="text-navy">Plots on Demand</h2>
-        <p>Explore our highly sought-after plot projects available for a limited time.</p>
-      </div>
-      <div class="properties-grid" style="text-align:left;">
-        ${onDemandPlots.map(p => renderPropertyCard(p, 'plots')).join('')}
-      </div>
-    </div>
-  </section>` : ''}
 
   <style>
     .mv-row { display: grid; gap: 40px; align-items: center; }
