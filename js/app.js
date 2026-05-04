@@ -1301,9 +1301,9 @@ async function submitReview() {
     return;
   }
 
-  const name = document.getElementById('rv-name')?.value.trim();
+  const name = document.getElementById('rv-name')?.value?.trim() || '';
   const rating = parseInt(document.querySelector('input[name="rv-rating"]:checked')?.value || '0');
-  const message = document.getElementById('rv-message')?.value.trim();
+  const message = document.getElementById('rv-message')?.value?.trim() || '';
 
   if (!name) { showToast('Please enter your name.', 'error'); return; }
   if (!rating) { showToast('Please select a star rating.', 'error'); return; }
@@ -1338,7 +1338,9 @@ async function submitReview() {
     renderReviews();
     applyAdminUI();
   } catch (e) {
+    console.error('Review submission error:', e);
     showToast('Failed to save review. Try again.', 'error');
+  } finally {
     if (btn) btn.disabled = false;
   }
 }
