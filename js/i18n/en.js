@@ -90,7 +90,7 @@ const en = {
     "about_mission": "Our Mission",
     "about_vision": "Our Vision",
     "about_clients_say_pre": "What Clients Say",
-    "about_clients_quote": "\"NextGen Realtors have made buying our dream home<br>an absolute joy.\"",
+    "about_clients_quote": "\"NextGen Realtors™ have made buying our dream home<br>an absolute joy.\"",
     "about_clients_author": "— Priya & Suresh Sharma, Jubilee Hills",
     "about_btn_reviews": "Read All Reviews →",
     "about_contact_btn": "📞 Get in Touch"

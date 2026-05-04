@@ -536,7 +536,7 @@ async function renderAbout() {
   const onDemandApartments = allApartments.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
 
   const defaultAbout = {
-    name: 'NextGen Realtors',
+    name: 'NextGen Realtors™',
     tagline: 'Your Trusted Guide',
     title: 'Senior Property Consultant · Hyderabad',
     bio1: 'With over <strong>15 years of experience</strong> in the Hyderabad real estate market, I specialise in helping families and investors find their perfect property — whether it\'s an open plot, a luxury flat, or a bespoke villa. My approach is built on transparency, local expertise, and a genuine commitment to your goals.',
@@ -2192,8 +2192,8 @@ function mpDrawUI() {
     + '<div style="background:#fff9e6; border:1px solid #ffe58f; border-radius:8px; padding:12px 16px; margin-bottom:12px; text-align:left; display:flex; gap:12px; align-items:center;">'
     + '<span style="font-size:1.4rem;">⚠️</span>'
     + '<p style="margin:0; font-size:0.85rem; color:#856404; line-height:1.5;">'
-    + '<strong>Disclaimer:</strong> Mini posts displayed in NextGen Realtors are only for advertisement purpose. '
-    + 'NextGen Realtors do not take any accountability on the legal issues of the properties details posted in Mini Posts.'
+    + '<strong>Disclaimer:</strong> Mini posts displayed in NextGen Realtors™ are only for advertisement purpose. '
+    + 'NextGen Realtors™ do not take any accountability on the legal issues of the properties details posted in Mini Posts.'
     + '</p></div>'
     + '<div style="background:var(--white);border:1px solid var(--light-grey);border-radius:12px;padding:20px;margin-bottom:20px;text-align:left;box-shadow:var(--shadow-sm);">'
     + '  <h3 class="text-navy" style="margin-bottom:12px;font-size:1.3rem;">List Your Property with Ease!</h3>'
