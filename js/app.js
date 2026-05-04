@@ -1359,10 +1359,28 @@ async function renderSubscribe() {
     // ---- ADMIN VIEW: List Subscribers ----
     contentHtml = `
       <div style="max-width:800px;margin:0 auto;background:var(--white);border-radius:var(--radius-lg);padding:40px;box-shadow:var(--shadow-md);border:1px solid var(--light-grey)">
-        <h3 style="color:var(--navy);margin-bottom:8px;font-size:1.5rem">Subscriber List</h3>
-        <p id="sub-count-display" style="color:var(--navy);font-size:1.1rem;font-weight:700;margin-bottom:24px">Loading subscribers...</p>
-        <div id="sub-list-container"></div>
-        <div id="sub-pagination-container" style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:32px; padding-bottom: 8px;"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:12px;">
+          <h3 style="color:var(--navy);font-size:1.5rem; margin:0;">Registered Users</h3>
+          <button id="ru-export-btn" class="btn btn-primary" onclick="exportRegisteredUsersCSV()" style="display:flex; align-items:center; gap:8px; padding:8px 20px; font-size:0.95rem;">
+            📥 Export to Excel
+          </button>
+        </div>
+        <p id="ru-count-display" style="color:var(--navy);font-size:1.1rem;font-weight:700;margin-bottom:24px">Loading users...</p>
+        <div class="property-table-wrap" style="box-shadow:var(--shadow-sm); border-radius:var(--radius-md); overflow:hidden; border:1px solid var(--light-grey)">
+          <table class="property-table" style="width:100%; margin:0">
+            <thead>
+              <tr>
+                <th style="width:60px; padding:12px; text-align:left; background:var(--off-white); border-bottom:2px solid var(--light-grey); color:var(--navy);">#</th>
+                <th style="padding:12px; text-align:left; background:var(--off-white); border-bottom:2px solid var(--light-grey); color:var(--navy);">Name</th>
+                <th style="padding:12px; text-align:left; background:var(--off-white); border-bottom:2px solid var(--light-grey); color:var(--navy);">Email</th>
+                <th style="padding:12px; text-align:left; background:var(--off-white); border-bottom:2px solid var(--light-grey); color:var(--navy);">Last Sign In</th>
+              </tr>
+            </thead>
+            <tbody id="ru-list-container">
+            </tbody>
+          </table>
+        </div>
+        <div id="ru-pagination-container" style="display:flex; justify-content:center; align-items:center; gap:20px; margin-top:32px; padding-bottom: 8px;"></div>
       </div>
     `;
 
@@ -1370,7 +1388,7 @@ async function renderSubscribe() {
       <div class="hero">
         <div class="container" style="position:relative;z-index:1">
           <p class="hero-eyebrow">Admin Area</p>
-          <h1>Manage <em>Subscribers</em></h1>
+          <h1>Manage <em>Registered Users</em></h1>
         </div>
       </div>
       <section class="section">
@@ -1378,7 +1396,7 @@ async function renderSubscribe() {
       </section>
     `;
 
-    renderSubscribersPage(true);
+    renderRegisteredUsersPage(true);
 
   } else {
     // ---- VISITOR VIEW: Subscribe Form ----
@@ -1512,6 +1530,142 @@ function changeSubscribersPage(direction) {
     window.scrollTo({ top: y, behavior: 'smooth' });
   }
   renderSubscribersPage(false);
+}
+
+async function renderRegisteredUsersPage(resetPage = false) {
+  if (resetPage) window._ruPage = 1;
+  if (!window._ruPage) window._ruPage = 1;
+
+  try {
+    const usersSnap = await db.collection('users').orderBy('lastSignIn', 'desc').get();
+    const totalUsers = usersSnap.size;
+    const allUsers = usersSnap.docs.map(doc => doc.data());
+    
+    const countDisplay = document.getElementById('ru-count-display');
+    if (countDisplay) countDisplay.innerHTML = `Total Registered Users: <span style="color:var(--gold)">${totalUsers}</span>`;
+    
+    const listContainer = document.getElementById('ru-list-container');
+    const paginationContainer = document.getElementById('ru-pagination-container');
+    if (!listContainer) return;
+
+    const itemsPerPage = 100;
+    const totalPages = Math.ceil(totalUsers / itemsPerPage) || 1;
+    if (window._ruPage > totalPages) window._ruPage = totalPages;
+    if (window._ruPage < 1) window._ruPage = 1;
+
+    const startIndex = (window._ruPage - 1) * itemsPerPage;
+    const paginatedItems = allUsers.slice(startIndex, startIndex + itemsPerPage);
+
+    if (paginatedItems.length === 0) {
+      listContainer.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--mid-grey)">No registered users found.</td></tr>';
+    } else {
+      listContainer.innerHTML = paginatedItems.map((u, i) => {
+        const email = u.email || 'N/A';
+        const name = u.displayName || 'N/A';
+        const lastSignIn = u.lastSignIn ? new Date(u.lastSignIn).toLocaleString() : 'N/A';
+        return `
+          <tr style="border-bottom:1px solid var(--light-grey);">
+            <td style="color:var(--mid-grey); padding:12px;">${startIndex + i + 1}</td>
+            <td style="font-weight:600;color:var(--navy); padding:12px;">${esc(name)}</td>
+            <td style="padding:12px;">${esc(email)}</td>
+            <td style="color:var(--mid-grey);font-size:0.9rem; padding:12px;">${esc(lastSignIn)}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    if (paginationContainer) {
+      let html = '';
+      if (window._ruPage > 1) {
+        html += `<button class="btn btn-secondary" style="padding: 8px 16px;" onclick="changeRUPage(-1)">← Previous</button>`;
+      } else {
+        html += `<button class="btn btn-secondary" style="padding: 8px 16px; opacity:0.5; cursor:not-allowed;" disabled>← Previous</button>`;
+      }
+
+      html += `<span style="font-weight:600; color:var(--navy); font-size:1.05rem;">Page ${window._ruPage} of ${totalPages}</span>`;
+
+      if (window._ruPage < totalPages) {
+        html += `<button class="btn btn-secondary" style="padding: 8px 16px;" onclick="changeRUPage(1)">Next →</button>`;
+      } else {
+        html += `<button class="btn btn-secondary" style="padding: 8px 16px; opacity:0.5; cursor:not-allowed;" disabled>Next →</button>`;
+      }
+      paginationContainer.innerHTML = html;
+    }
+
+  } catch (e) {
+    console.error(e);
+    const errorEl = document.getElementById('ru-count-display');
+    if (errorEl) errorEl.textContent = 'Error loading users.';
+  }
+}
+
+function changeRUPage(direction) {
+  window._ruPage += direction;
+  const container = document.getElementById('ru-list-container');
+  if (container) {
+    const y = container.getBoundingClientRect().top + window.scrollY - 100;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+  }
+  renderRegisteredUsersPage(false);
+}
+
+async function exportRegisteredUsersCSV() {
+  if (!Admin.isLoggedIn()) { showToast('Unauthorized', 'error'); return; }
+
+  const btn = document.getElementById('ru-export-btn');
+  if (btn) { btn.disabled = true; btn.innerHTML = '⏳ Exporting...'; }
+
+  try {
+    const usersSnap = await db.collection('users').orderBy('lastSignIn', 'desc').get();
+    const allUsers = usersSnap.docs.map(doc => doc.data());
+
+    if (allUsers.length === 0) {
+      showToast('No registered users to export.', 'error');
+      return;
+    }
+
+    // Build CSV rows
+    const headers = ['#', 'Name', 'Email', 'Last Sign In'];
+    const rows = allUsers.map((u, i) => [
+      i + 1,
+      u.displayName || 'N/A',
+      u.email || 'N/A',
+      u.lastSignIn ? new Date(u.lastSignIn).toLocaleString() : 'N/A'
+    ]);
+
+    const csvEscape = val => {
+      const str = String(val);
+      // Wrap in quotes if it contains comma, quote or newline
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    };
+
+    const csvContent = [
+      headers.map(csvEscape).join(','),
+      ...rows.map(row => row.map(csvEscape).join(','))
+    ].join('\r\n');
+
+    // Add BOM for Excel to correctly detect UTF-8
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+    a.href = url;
+    a.download = `registered_users_${date}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showToast(`✅ Exported ${allUsers.length} users successfully!`, 'success');
+  } catch (e) {
+    console.error('Export failed:', e);
+    showToast('Failed to export users. Please try again.', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '📥 Export to Excel'; }
+  }
 }
 
 let pendingSubscriber = null;

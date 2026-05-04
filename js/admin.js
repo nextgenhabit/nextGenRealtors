@@ -134,6 +134,10 @@ function applyAdminUI() {
   // Toggle Change Password button
   const cpwbtn = document.getElementById('admin-cpw-btn');
   if (cpwbtn) cpwbtn.style.display = isAdmin ? 'inline-block' : 'none';
+
+  // Toggle Subscribers tab
+  const subNav = document.getElementById('nav-subscribers');
+  if (subNav) subNav.style.display = isAdmin ? 'block' : 'none';
 }
 
 // ---- Admin Modals ----
