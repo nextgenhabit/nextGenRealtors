@@ -191,6 +191,23 @@ function getYouTubeId(url) {
 }
 
 async function renderDetail(type, id) {
+  // ---- AUTH GATE: detail pages require login ----
+  if (typeof Auth !== 'undefined' && !Auth.currentUser()) {
+    const content = document.getElementById('page-content');
+    content.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;padding:60px 20px;text-align:center;">
+        <div style="font-size:3.5rem;margin-bottom:20px;">🔒</div>
+        <h2 style="color:var(--navy);font-family:'Playfair Display',serif;margin-bottom:12px;">Sign In Required</h2>
+        <p style="color:var(--mid-grey);font-size:1rem;max-width:400px;margin-bottom:28px;">Please sign in with your Google account to view full property details.</p>
+        <button class="btn btn-primary btn-lg" onclick="Auth.requireAuth(() => renderDetail('${esc(type)}', '${esc(id)}'))">
+          Sign In to View
+        </button>
+      </div>`;
+    // Also open the modal automatically
+    Auth.requireAuth(() => renderDetail(type, id));
+    return;
+  }
+
   const content = document.getElementById('page-content');
 
   const items = await DB[type].get();
