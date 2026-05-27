@@ -74,7 +74,7 @@ const te = {
     "about_hero_badge": "⭐ టాప్ రేటెడ్ ఏజెంట్",
     "about_stats_1_num": "8+",
     "about_stats_1_label": "సంవత్సరాల అనుభవం",
-    "about_stats_2_num": "500+",
+    "about_stats_2_num": "50+",
     "about_stats_2_label": "డీల్స్ క్లోజ్ చేయబడ్డాయి",
     "about_stats_3_num": "98%",
     "about_stats_3_label": "కస్టమర్ సంతృప్తి",

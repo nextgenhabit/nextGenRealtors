@@ -74,7 +74,7 @@ const hi = {
     "about_hero_badge": "⭐ टॉप रेटेड एजेंट",
     "about_stats_1_num": "8+",
     "about_stats_1_label": "वर्षों का अनुभव",
-    "about_stats_2_num": "500+",
+    "about_stats_2_num": "50+",
     "about_stats_2_label": "सौदे पक्के किए",
     "about_stats_3_num": "98%",
     "about_stats_3_label": "ग्राहक संतुष्टि",

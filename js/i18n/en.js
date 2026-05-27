@@ -74,7 +74,7 @@ const en = {
     "about_hero_badge": "⭐ Top Rated Agent",
     "about_stats_1_num": "8+",
     "about_stats_1_label": "Years Experience",
-    "about_stats_2_num": "100+",
+    "about_stats_2_num": "50+",
     "about_stats_2_label": "Deals Closed",
     "about_stats_3_num": "98%",
     "about_stats_3_label": "Client Satisfaction",
