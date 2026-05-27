@@ -1566,22 +1566,22 @@ textarea.form-control {
 }
 
 .contact-info-card {
-  background: linear-gradient(160deg, #FFFBF9 0%, #FFF1E6 100%);
-  border: 1px solid rgba(243, 119, 33, 0.12);
+  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-light) 100%); /* Brand corporate navy */
+  border: 1px solid rgba(255, 143, 66, 0.25); /* Brand orange accent */
   box-shadow: var(--shadow-md);
   border-radius: var(--radius-lg);
   padding: 44px 36px;
-  color: var(--navy);
+  color: var(--white);
 }
 
 .contact-info-card h3 {
   font-size: 1.6rem;
   margin-bottom: 12px;
-  color: var(--navy);
+  color: var(--white); /* White header for navy contrast */
 }
 
 .contact-info-card p {
-  color: var(--text-dark);
+  color: rgba(255, 255, 255, 0.75); /* Readable off-white paragraphs */
   opacity: 0.85;
   font-size: 0.9rem;
   line-height: 1.7;
@@ -1598,24 +1598,28 @@ textarea.form-control {
 .contact-detail-icon {
   width: 44px;
   height: 44px;
-  background: rgba(243, 119, 33, 0.08);
-  border: 1px solid rgba(243, 119, 33, 0.25);
+  background: rgba(255, 143, 66, 0.12); /* Glowing gold/orange icon background */
+  border: 1px solid rgba(255, 143, 66, 0.4); /* Glowing border */
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
   flex-shrink: 0;
-  color: var(--gold-dark);
+  color: var(--gold); /* Bright gold icon color from logo */
 }
 
 .contact-detail-label {
   font-size: 0.75rem;
-  color: var(--text-dark);
-  opacity: 0.6;
+  color: rgba(255, 255, 255, 0.6); /* Translucent labels for contrast */
+  opacity: 0.8;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 4px;
+}
+
+.contact-info-card .contact-detail-value {
+  color: var(--white); /* High contrast white value strings */
 }
 
 .contact-detail-value {
