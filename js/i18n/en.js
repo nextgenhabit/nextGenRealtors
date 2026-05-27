@@ -1,5 +1,6 @@
 const en = {
     // Navigation
+    "nav_home": "Home",
     "nav_about": "About Us",
     "nav_projects": "Projects",
     "nav_plots": "Plots",

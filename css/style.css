@@ -616,19 +616,13 @@ button {
 
 /* ---- Hero (reused across pages) ---- */
 .hero {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 50%, #0D2444 100%);
-  background-size: 200% 200%;
-  animation: heroGradient 12s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+  background: linear-gradient(135deg, #FFFDFB 0%, #FFF5ED 50%, #FFFDFB 100%);
   position: relative;
   overflow: hidden;
   padding: 60px 0 40px;
   text-align: center;
-  color: var(--white);
-}
-
-@keyframes heroGradient {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  color: var(--navy);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .hero::before {
@@ -638,7 +632,7 @@ button {
   left: -20%;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(201, 168, 76, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(243, 119, 33, 0.08) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -649,7 +643,7 @@ button {
   right: -10%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(243, 119, 33, 0.05) 0%, transparent 70%);
   pointer-events: none;
 }
 
@@ -657,29 +651,39 @@ button {
   font-size: 0.8rem;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--gold-dark);
   font-weight: 600;
   margin-bottom: 16px;
 }
 
 .hero h1 {
   font-size: clamp(2rem, 5vw, 3.5rem);
-  color: var(--white);
+  color: var(--navy);
   margin-bottom: 20px;
   line-height: 1.15;
 }
 
 .hero h1 em {
-  color: var(--gold);
+  color: var(--gold-dark);
   font-style: italic;
 }
 
 .hero p {
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: var(--text-dark);
   max-width: 560px;
   margin: 0 auto 36px;
   line-height: 1.7;
+}
+
+.hero .btn-ghost {
+  color: var(--navy);
+  border-color: var(--light-grey);
+  background: rgba(13, 46, 79, 0.04);
+}
+
+.hero .btn-ghost:hover {
+  background: rgba(13, 46, 79, 0.08);
 }
 
 /* ---- Property Cards ---- */
@@ -1114,6 +1118,71 @@ textarea.form-control {
   }
 }
 
+.home-hero {
+  background-color: transparent;
+  padding: 100px 0 80px;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  text-align: center;
+}
+
+.home-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Beautiful light gradient overlay, keeping the background extremely bright and rich */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 246, 235, 0.2) 100%);
+  z-index: -1;
+}
+
+.home-hero-bg {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  /* Beautiful luxury suburban home backdrop */
+  background-image: url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  z-index: -2;
+  animation: bgPanZoom 20s ease-in-out infinite alternate;
+}
+
+.home-hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+  color: var(--text-dark);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 50px 40px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+}
+
+.home-hero-content h1 {
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  color: var(--navy);
+  margin-bottom: 24px;
+  line-height: 1.15;
+}
+
+.home-hero-content h1 em {
+  color: var(--gold-dark);
+  font-style: italic;
+}
+
+.hero-desc {
+  font-size: 1.15rem;
+  color: var(--text-dark);
+  line-height: 1.7;
+  max-width: 640px;
+  margin: 0 auto 36px;
+}
+
 .about-hero {
   background-color: transparent;
   padding: 60px 0 40px;
@@ -1126,8 +1195,8 @@ textarea.form-control {
   content: '';
   position: absolute;
   inset: 0;
-  /* Darker, more consistent overlay for better text contrast */
-  background: linear-gradient(135deg, rgba(13, 46, 79, 0.85) 0%, rgba(13, 46, 79, 0.6) 50%, rgba(27, 48, 96, 0.8) 100%);
+  /* Beautiful bright, glowing glass overlay - keeping background skyscrapers bright and visible */
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 248, 240, 0.25) 100%);
   z-index: -1;
 }
 
@@ -1207,38 +1276,55 @@ textarea.form-control {
 }
 
 .about-hero-content {
-  color: var(--white);
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-dark);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: 40px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.05);
+}
+
+.about-hero-content .btn-ghost {
+  color: var(--navy);
+  border-color: var(--light-grey);
+  background: rgba(13, 46, 79, 0.04);
+}
+
+.about-hero-content .btn-ghost:hover {
+  background: rgba(13, 46, 79, 0.08);
 }
 
 .about-name {
   font-size: clamp(2.2rem, 4vw, 3rem);
-  color: var(--white);
+  color: var(--navy);
   margin-bottom: 8px;
 }
 
+.about-name em {
+  color: var(--gold-dark);
+}
+
 .about-title {
-  color: var(--gold);
+  color: var(--gold-dark);
   font-size: 1.1rem;
   font-weight: 700;
   margin-bottom: 24px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .about-bio {
-  color: var(--white);
+  color: var(--text-dark);
   line-height: 1.8;
   margin-bottom: 24px;
   font-size: 1.05rem;
   text-align: left;
+}
+
+.about-bio strong {
+  color: var(--navy);
 }
 
 .about-social {
@@ -1276,24 +1362,26 @@ textarea.form-control {
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(201, 168, 76, 0.2);
+  background: var(--white);
+  border: 1px solid rgba(243, 119, 33, 0.12);
   border-radius: var(--radius-md);
   padding: 28px 20px;
   text-align: center;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(243, 119, 33, 0.04);
   transition: var(--transition);
 }
 
 .stat-card:hover {
-  background: rgba(201, 168, 76, 0.1);
+  background: var(--white);
+  border-color: var(--gold);
   transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(243, 119, 33, 0.08);
 }
 
 .stat-number {
   font-family: 'Playfair Display', serif;
   font-size: 2.5rem;
-  color: var(--gold);
+  color: var(--gold); /* Brightened to use primary brand gold */
   font-weight: 700;
   line-height: 1;
   margin-bottom: 8px;
@@ -1301,7 +1389,8 @@ textarea.form-control {
 
 .stat-label {
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-dark);
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -1477,19 +1566,23 @@ textarea.form-control {
 }
 
 .contact-info-card {
-  background: linear-gradient(160deg, var(--navy) 0%, var(--navy-mid) 100%);
+  background: linear-gradient(160deg, #FFFBF9 0%, #FFF1E6 100%);
+  border: 1px solid rgba(243, 119, 33, 0.12);
+  box-shadow: var(--shadow-md);
   border-radius: var(--radius-lg);
   padding: 44px 36px;
-  color: var(--white);
+  color: var(--navy);
 }
 
 .contact-info-card h3 {
   font-size: 1.6rem;
   margin-bottom: 12px;
+  color: var(--navy);
 }
 
 .contact-info-card p {
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--text-dark);
+  opacity: 0.85;
   font-size: 0.9rem;
   line-height: 1.7;
   margin-bottom: 36px;
@@ -1505,20 +1598,21 @@ textarea.form-control {
 .contact-detail-icon {
   width: 44px;
   height: 44px;
-  background: rgba(201, 168, 76, 0.15);
-  border: 1px solid rgba(201, 168, 76, 0.3);
+  background: rgba(243, 119, 33, 0.08);
+  border: 1px solid rgba(243, 119, 33, 0.25);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.1rem;
   flex-shrink: 0;
-  color: var(--gold);
+  color: var(--gold-dark);
 }
 
 .contact-detail-label {
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-dark);
+  opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 4px;
@@ -1526,7 +1620,7 @@ textarea.form-control {
 
 .contact-detail-value {
   font-size: 0.95rem;
-  color: var(--white);
+  color: var(--navy);
   font-weight: 500;
 }
 
@@ -2718,10 +2812,43 @@ textarea.form-control {
   }
 }
 
+/* ---- Dark stats grid theme (Logo Colors: Navy + Gold) ---- */
+.stats-grid-dark .stat-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.stats-grid-dark .stat-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--gold);
+  box-shadow: 0 15px 40px rgba(255, 143, 66, 0.15);
+}
+
+.stats-grid-dark .stat-number {
+  color: var(--gold); /* Logo Gold/Orange */
+  text-shadow: 0 2px 10px rgba(255, 143, 66, 0.2);
+}
+
+.stats-grid-dark .stat-label {
+  color: rgba(255, 255, 255, 0.85); /* Readable light gray/white label */
+  font-weight: 500;
+}
+
+.stats-grid-dark .stat-card-users {
+  border: 1px solid rgba(255, 143, 66, 0.4);
+  background: rgba(255, 143, 66, 0.08);
+}
+
+.stats-grid-dark .stat-card-users .stat-label {
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
 /* Registered Users highlight card */
 .stat-card-users {
-  border: 1px solid rgba(201, 168, 76, 0.45);
-  background: rgba(201, 168, 76, 0.08);
+  border: 1px solid rgba(255, 143, 66, 0.3); /* Bright brand orange border */
+  background: rgba(255, 143, 66, 0.05); /* Light warm brand orange fill */
   position: relative;
   overflow: hidden;
 }
@@ -2731,7 +2858,7 @@ textarea.form-control {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--gold), #f5c842);
+  background: linear-gradient(90deg, var(--gold), var(--gold-light)); /* Bright brand orange gradient */
   border-radius: 3px 3px 0 0;
 }
 

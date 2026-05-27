@@ -7,11 +7,11 @@
   <meta name="description"
     content="NextGen Realtors™ – Trusted real estate agent in Hyderabad. Browse plots, flats, and villas for sale. Contact us today!">
   <title>NextGen Realtors™ | Premium Properties in Hyderabad</title>
-  <link rel="stylesheet" href="css/style.css?v=26">
+  <link rel="stylesheet" href="css/style.css?v=30">
   <!-- Translations -->
-  <script src="js/i18n/en.js?v=37"></script>
-  <script src="js/i18n/te.js?v=37"></script>
-  <script src="js/i18n/hi.js?v=37"></script>
+  <script src="js/i18n/en.js?v=38"></script>
+  <script src="js/i18n/te.js?v=38"></script>
+  <script src="js/i18n/hi.js?v=38"></script>
   <script src="js/i18n/i18n.js?v=16"></script>
   <!-- Favicon emoji -->
   <link rel="icon"
@@ -27,7 +27,7 @@
   <!-- ====== NAVIGATION ====== -->
   <nav id="navbar">
     <div class="nav-inner">
-      <div class="nav-logo" style="position:relative; cursor:pointer;" onclick="navigate('about')">
+      <div class="nav-logo" style="position:relative; cursor:pointer;" onclick="navigate('home')">
         <img id="site-logo-img" src="images/Logo.png" alt="NextGen Realtors Logo"
           style="height:40px; margin-right:8px; object-fit:contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));"
           onerror="if(this.src.endsWith('.png')){this.src='images/Logo.jpg';}else if(this.src.endsWith('.jpg')){this.src='images/Logo.jpeg';}else{this.style.display='none';}">
@@ -42,6 +42,7 @@
       </div>
 
       <ul class="nav-links" id="nav-links">
+        <li><a href="#home" data-page="home" data-i18n="nav_home" onclick="navigate('home');  return false;">Home</a></li>
         <li><a href="#about" data-page="about" data-i18n="nav_about" onclick="navigate('about');  return false;">About
             Me</a></li>
         <li class="nav-dropdown">
@@ -468,7 +469,7 @@
   <script src="js/data.js?v=37"></script>
   <script src="js/auth.js?v=4"></script>
   <script src="js/admin.js?v=44"></script>
-  <script src="js/app.js?v=58"></script>
+  <script src="js/app.js?v=67"></script>
 
 </body>
 

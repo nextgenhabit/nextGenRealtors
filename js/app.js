@@ -466,6 +466,7 @@ async function confirmDelete() {
 
 // ---- Router ----
 const pages = {
+  home: renderHome,
   about: renderAbout,
   plots: () => renderListings('plots'),
   flats: () => renderListings('flats'),
@@ -503,7 +504,7 @@ function loadPage(path) {
   const params = parts.slice(1);
 
   let page = pageName;
-  if (!pages[page]) page = 'about';
+  if (!pages[page]) page = 'home';
 
   document.querySelectorAll('.nav-links a').forEach(a => {
     a.classList.toggle('active', a.dataset.page === page);
@@ -526,31 +527,244 @@ function loadPage(path) {
 
 // ---- Page Renderers ----
 
-async function renderAbout() {
+async function renderHome() {
   const content = document.getElementById('page-content');
   content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div></div>';
 
-  let aboutData = [], registeredUsersCount = 0, clientsData = [], allPlots = [], allApartments = [];
+  let allPlots = [], allApartments = [], allVillas = [], clientsData = [];
   try {
     const results = await Promise.all([
-      DB.about.get(),
-      db.collection('users').get(),
-      DB.clients.get(),
       DB.plots.get(),
-      DB.apartments.get()
+      DB.apartments.get(),
+      DB.villas.get(),
+      DB.clients.get()
     ]);
     
-    aboutData = results[0];
-    registeredUsersCount = results[1].size;
-    clientsData = results[2];
-    allPlots = results[3];
-    allApartments = results[4];
+    allPlots = results[0];
+    allApartments = results[1];
+    allVillas = results[2];
+    clientsData = results[3];
   } catch (e) {
     console.error('Data fetch failed', e);
   }
 
   const onDemandPlots = allPlots.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
   const onDemandApartments = allApartments.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
+  const onDemandVillas = allVillas.filter(p => p.projectOnDemand === 'Yes').slice(0, 3);
+
+  // Parallelize dynamic translations for better performance
+  if (window.I18n && I18n.currentLanguage !== 'en') {
+    // Translate standard texts or descriptions if needed
+  }
+
+  content.innerHTML = `
+  <section class="home-hero">
+    <div class="home-hero-bg"></div>
+    <div class="container" style="position:relative; z-index:2;">
+      <div class="home-hero-content">
+        <p class="hero-eyebrow text-gold fade-up">${t('hero_eyebrow')}</p>
+        <h1 class="fade-up fade-up-delay-1">${t('hero_title')}</h1>
+        <p class="hero-desc fade-up fade-up-delay-2">${t('hero_desc')}</p>
+        <div class="fade-up fade-up-delay-3" style="display:flex; justify-content:center; gap:16px;">
+          <button class="btn btn-primary btn-lg" onclick="navigate('plots')">${t('hero_btn')}</button>
+          <a href="#contact" class="btn btn-secondary btn-lg" onclick="navigate('contact')">Get in Touch</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section" style="background:var(--off-white);">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Apartments on Demand</h2>
+        <p>Explore our highly sought-after apartment projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandApartments.length > 0 
+          ? onDemandApartments.map(p => renderPropertyCard(p, 'apartments')).join('')
+          : `<div style="grid-column: 1 / -1; background: var(--white); border: 2px dashed rgba(243, 119, 33, 0.15); border-radius: var(--radius-md); padding: 40px 24px; text-align: center; color: var(--text-dark); box-shadow: var(--shadow-sm);">
+              <div style="font-size: 2.2rem; margin-bottom: 12px;">🏢</div>
+              <p style="font-weight: 600; font-size: 1rem; margin-bottom: 16px; color: var(--navy);">No Featured Apartments On Demand Right Now</p>
+              <a href="#contact" class="btn btn-primary btn-sm" onclick="navigate('contact')">📩 Enquire for Off-Market Deals</a>
+            </div>`
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--white);">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Plots on Demand</h2>
+        <p>Explore our highly sought-after plot projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandPlots.length > 0 
+          ? onDemandPlots.map(p => renderPropertyCard(p, 'plots')).join('')
+          : `<div style="grid-column: 1 / -1; background: var(--off-white); border: 2px dashed rgba(243, 119, 33, 0.15); border-radius: var(--radius-md); padding: 40px 24px; text-align: center; color: var(--text-dark); box-shadow: var(--shadow-sm);">
+              <div style="font-size: 2.2rem; margin-bottom: 12px;">🌿</div>
+              <p style="font-weight: 600; font-size: 1rem; margin-bottom: 16px; color: var(--navy);">No Featured Plots On Demand Right Now</p>
+              <a href="#contact" class="btn btn-primary btn-sm" onclick="navigate('contact')">📩 Enquire for Off-Market Deals</a>
+            </div>`
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background:var(--off-white);">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">FEATURED</p>
+        <h2 class="text-navy">Villas on Demand</h2>
+        <p>Explore our highly sought-after villa projects available for a limited time.</p>
+      </div>
+      <div class="properties-grid" style="text-align:left;">
+        ${onDemandVillas.length > 0 
+          ? onDemandVillas.map(p => renderPropertyCard(p, 'villas')).join('')
+          : `<div style="grid-column: 1 / -1; background: var(--white); border: 2px dashed rgba(243, 119, 33, 0.15); border-radius: var(--radius-md); padding: 40px 24px; text-align: center; color: var(--text-dark); box-shadow: var(--shadow-sm);">
+              <div style="font-size: 2.2rem; margin-bottom: 12px;">🏡</div>
+              <p style="font-weight: 600; font-size: 1rem; margin-bottom: 16px; color: var(--navy);">No Featured Villas On Demand Right Now</p>
+              <a href="#contact" class="btn btn-primary btn-sm" onclick="navigate('contact')">📩 Enquire for Off-Market Deals</a>
+            </div>`
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Media Handles -->
+  <section class="section" style="background:var(--white); padding-bottom:60px;">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">CONNECT WITH US</p>
+        <h2 class="text-navy">Social Media Handles</h2>
+        <p>Stay updated with our latest property listings and real estate insights.</p>
+      </div>
+      <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap; margin-bottom:0;">
+        <a href="https://whatsapp.com/channel/0029VbCgeWyAzNbsnw5lZV3O" target="_blank" class="social-card fade-up">
+          <div class="social-card-icon wa">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <span>WhatsApp</span>
+        </a>
+        <a href="https://www.youtube.com/channel/UC06qF2z-4PF2_9wxP0uuLUA" target="_blank" class="social-card fade-up" style="animation-delay:0.1s">
+          <div class="social-card-icon yt">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </div>
+          <span>YouTube</span>
+        </a>
+        <a href="https://www.instagram.com/nextgenrealtors4/" target="_blank" class="social-card fade-up" style="animation-delay:0.2s">
+          <div class="social-card-icon insta">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </div>
+          <span>Instagram</span>
+        </a>
+        <a href="https://www.facebook.com/nextGenRealtorsHub" target="_blank" class="social-card fade-up" style="animation-delay:0.3s">
+          <div class="social-card-icon fb">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
+          </div>
+          <span>Facebook</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Find Your Perfect Property Categories -->
+  <section class="section" style="background:var(--off-white); padding-top:60px;">
+    <div class="container">
+      <div class="section-header mb-32">
+        <p class="hero-eyebrow text-gold">DISCOVER OUR PORTFOLIO</p>
+        <h2 class="text-navy">Find Your Perfect Property</h2>
+        <p>Explore our curated selection of premium real estate across Hyderabad's most sought-after locations.</p>
+      </div>
+      <div class="cat-card-grid">
+        <div class="cat-card fade-up" onclick="navigate('plots')" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Plots</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+        <div class="cat-card fade-up fade-up-delay-1" onclick="navigate('villas')" style="background-image: url('https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Villas</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+        <div class="cat-card fade-up fade-up-delay-2" onclick="navigate('commercial')" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Commercial</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+        <div class="cat-card fade-up fade-up-delay-3" onclick="navigate('apartments')" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop')">
+          <div class="cat-card-overlay"></div>
+          <div class="cat-card-content">
+            <h3>Apartments</h3>
+            <span class="cat-card-link">View Listings →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our Clients / Associations -->
+  <section class="section" style="background:var(--white); text-align:center;">
+    <div class="container">
+      <p class="hero-eyebrow text-gold">ASSOCIATIONS</p>
+      <h2 class="text-navy mb-8">Proudly Collaborating With</h2>
+      <p class="mb-32" style="color:var(--text-dark);">Driving success through trusted partnerships and exceptional service.</p>
+      
+      ${Admin.isLoggedIn() ? `<div style="text-align:right; margin-bottom: 20px;"><button class="btn btn-primary btn-sm" onclick="showPropertyForm('clients')">➕ Add Client</button></div>` : ''}
+      
+      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
+        ${clientsData.map(c => `
+          <div class="fade-up" style="display:flex; flex-direction:column; align-items:center; width: 140px;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background:var(--white); box-shadow:0 10px 20px rgba(0,0,0,0.05); margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
+              ${c.imageUrl ? `<img src="${esc(c.imageUrl)}" loading="lazy" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : '<span style="font-size:2rem;">🤝</span>'}
+            </div>
+            <p style="font-weight:600; color:var(--navy); font-size:0.95rem; text-align:center; word-break:break-word;">${esc(c.title)}</p>
+            ${Admin.isLoggedIn() ? `<div style="display:flex; gap:4px; margin-top:8px;"><button class="btn-icon " style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Edit" onclick="editProperty('clients','${c.id}')">✏️</button><button class="btn-icon" style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Delete" onclick="deleteProperty('clients','${c.id}')">🗑️</button></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial teaser -->
+  <section class="section" style="background:var(--navy);text-align:center">
+    <div class="container">
+      <p style="color:#FCA140;font-size:1.1rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px">${t('about_clients_say_pre')}</p>
+      <h2 style="color:var(--white);font-size:2rem;margin-bottom:24px">${t('about_clients_quote')}</h2>
+      <p style="color:rgba(255,255,255,0.6);margin-bottom:32px">${t('about_clients_author')}</p>
+      <button class="btn btn-secondary" onclick="navigate('reviews')">${t('about_btn_reviews')}</button>
+    </div>
+  </section>
+  `;
+
+  if (window.observeNewElements) window.observeNewElements();
+}
+
+async function renderAbout() {
+  const content = document.getElementById('page-content');
+  content.innerHTML = '<div style="padding:100px;text-align:center"><div class="loading-spinner"></div></div>';
+
+  let aboutData = [], registeredUsersCount = 0;
+  try {
+    const results = await Promise.all([
+      DB.about.get(),
+      db.collection('users').get()
+    ]);
+    
+    aboutData = results[0];
+    registeredUsersCount = results[1].size;
+  } catch (e) {
+    console.error('Data fetch failed', e);
+  }
 
   const defaultAbout = {
     name: 'NextGen Realtors™',
@@ -603,9 +817,9 @@ async function renderAbout() {
   </section>
 
   <!-- Stats -->
-  <section style="background:linear-gradient(135deg,var(--navy),var(--navy-mid));padding:0">
+  <section style="background:linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);padding:0;border-bottom:1px solid rgba(243,119,33,0.08);">
     <div class="container">
-      <div class="stats-grid stats-grid-4" style="padding:60px 0">
+      <div class="stats-grid stats-grid-4 stats-grid-dark" style="padding:60px 0">
         <div class="stat-card"><div class="stat-number count-up-stat" data-target-value="${t('about_stats_1_num')}">${t('about_stats_1_num')}</div><div class="stat-label">${t('about_stats_1_label')}</div></div>
         <div class="stat-card"><div class="stat-number count-up-stat" data-target-value="${t('about_stats_2_num')}">${t('about_stats_2_num')}</div><div class="stat-label">${t('about_stats_2_label')}</div></div>
         <div class="stat-card"><div class="stat-number count-up-stat" data-target-value="${t('about_stats_3_num')}">${t('about_stats_3_num')}</div><div class="stat-label">${t('about_stats_3_label')}</div></div>
@@ -616,34 +830,6 @@ async function renderAbout() {
       </div>
     </div>
   </section>
-
-  ${onDemandApartments.length > 0 ? `
-  <section class="section" style="background:var(--off-white);">
-    <div class="container">
-      <div class="section-header mb-32">
-        <p class="hero-eyebrow text-gold">FEATURED</p>
-        <h2 class="text-navy">Apartments on Demand</h2>
-        <p>Explore our highly sought-after apartment projects available for a limited time.</p>
-      </div>
-      <div class="properties-grid" style="text-align:left;">
-        ${onDemandApartments.map(p => renderPropertyCard(p, 'apartments')).join('')}
-      </div>
-    </div>
-  </section>` : ''}
-
-  ${onDemandPlots.length > 0 ? `
-  <section class="section" style="background:var(--white);">
-    <div class="container">
-      <div class="section-header mb-32">
-        <p class="hero-eyebrow text-gold">FEATURED</p>
-        <h2 class="text-navy">Plots on Demand</h2>
-        <p>Explore our highly sought-after plot projects available for a limited time.</p>
-      </div>
-      <div class="properties-grid" style="text-align:left;">
-        ${onDemandPlots.map(p => renderPropertyCard(p, 'plots')).join('')}
-      </div>
-    </div>
-  </section>` : ''}
 
   <!-- Expertise -->
   <section class="section" style="background:var(--off-white)">
@@ -677,84 +863,14 @@ async function renderAbout() {
     </div>
   </section>
 
-  <!-- Social Media Handles -->
-  <section class="section" style="background:var(--white); padding-bottom:0;">
-    <div class="container">
-      <div class="section-header mb-32">
-        <p class="hero-eyebrow text-gold">CONNECT WITH US</p>
-        <h2 class="text-navy">Social Media Handles</h2>
-        <p>Stay updated with our latest property listings and real estate insights.</p>
-      </div>
-      <div style="display:flex; justify-content:center; gap:30px; flex-wrap:wrap; margin-bottom:40px;">
-        <a href="https://whatsapp.com/channel/0029VbCgeWyAzNbsnw5lZV3O" target="_blank" class="social-card fade-up">
-          <div class="social-card-icon wa">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          </div>
-          <span>WhatsApp</span>
-        </a>
-        <a href="https://www.youtube.com/channel/UC06qF2z-4PF2_9wxP0uuLUA" target="_blank" class="social-card fade-up" style="animation-delay:0.1s">
-          <div class="social-card-icon yt">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-          </div>
-          <span>YouTube</span>
-        </a>
-        <a href="https://www.instagram.com/nextgenrealtors4/" target="_blank" class="social-card fade-up" style="animation-delay:0.2s">
-          <div class="social-card-icon insta">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-          </div>
-          <span>Instagram</span>
-        </a>
-        <a href="https://www.facebook.com/nextGenRealtorsHub" target="_blank" class="social-card fade-up" style="animation-delay:0.3s">
-          <div class="social-card-icon fb">
-            <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor"><path d="M22.675 0h-21.35c-.732 0-1.325.593-1.325 1.325v21.351c0 .731.593 1.324 1.325 1.324h11.495v-9.294h-3.128v-3.622h3.128v-2.671c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12v9.293h6.116c.73 0 1.323-.593 1.323-1.325v-21.35c0-.732-.593-1.325-1.325-1.325z"/></svg>
-          </div>
-          <span>Facebook</span>
-        </a>
-      </div>
-      <div class="mt-24" style="border-top:1px solid var(--light-grey);"></div>
-    </div>
-  </section>
-
-  <!-- Find Your Perfect Property Categories -->
-  <section class="section" style="background:var(--white); padding-top:40px;">
-    <div class="container">
-      <div class="section-header mb-32">
-        <p class="hero-eyebrow text-gold">DISCOVER OUR PORTFOLIO</p>
-        <h2 class="text-navy">Find Your Perfect Property</h2>
-        <p>Explore our curated selection of premium real estate across Hyderabad's most sought-after locations.</p>
-      </div>
-      <div class="cat-card-grid">
-        <div class="cat-card fade-up" onclick="navigate('plots')" style="background-image: url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop')">
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-content">
-            <h3>Plots</h3>
-            <span class="cat-card-link">View Listings →</span>
-          </div>
-        </div>
-        <div class="cat-card fade-up fade-up-delay-1" onclick="navigate('villas')" style="background-image: url('https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1200&auto=format&fit=crop')">
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-content">
-            <h3>Villas</h3>
-            <span class="cat-card-link">View Listings →</span>
-          </div>
-        </div>
-        <div class="cat-card fade-up fade-up-delay-2" onclick="navigate('commercial')" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop')">
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-content">
-            <h3>Commercial</h3>
-            <span class="cat-card-link">View Listings →</span>
-          </div>
-        </div>
-        <div class="cat-card fade-up fade-up-delay-3" onclick="navigate('apartments')" style="background-image: url('https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop')">
-          <div class="cat-card-overlay"></div>
-          <div class="cat-card-content">
-            <h3>Apartments</h3>
-            <span class="cat-card-link">View Listings →</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <style>
+    .mv-row { display: grid; gap: 40px; align-items: center; }
+    @media (min-width: 768px) {
+      .mv-row { grid-template-columns: 1fr 1fr; }
+      .mv-row.reverse .mv-content { order: 2; }
+      .mv-row.reverse .mv-image-wrap { order: 1; }
+    }
+  </style>
 
   <!-- Mission & Vision -->
   <section class="section" style="background:var(--white)">
@@ -786,49 +902,6 @@ async function renderAbout() {
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Our Clients -->
-  <section class="section" style="background:var(--off-white); text-align:center;">
-    <div class="container">
-      <p class="hero-eyebrow text-gold">ASSOCIATIONS</p>
-      <h2 class="text-navy mb-8">Proudly Collaborating With</h2>
-      <p class="mb-32" style="color:var(--text-dark);">Driving success through trusted partnerships and exceptional service.</p>
-      
-      ${Admin.isLoggedIn() ? `<div style="text-align:right; margin-bottom: 20px;"><button class="btn btn-primary btn-sm" onclick="showPropertyForm('clients')">➕ Add Client</button></div>` : ''}
-      
-      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 40px;">
-        ${clientsData.map(c => `
-          <div class="fade-up" style="display:flex; flex-direction:column; align-items:center; width: 140px;">
-            <div style="width: 100px; height: 100px; border-radius: 50%; overflow: hidden; background:var(--white); box-shadow:0 10px 20px rgba(0,0,0,0.05); margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
-              ${c.imageUrl ? `<img src="${esc(c.imageUrl)}" loading="lazy" style="width:100%; height:100%; object-fit:contain; padding:8px;">` : '<span style="font-size:2rem;">🤝</span>'}
-            </div>
-            <p style="font-weight:600; color:var(--navy); font-size:0.95rem; text-align:center; word-break:break-word;">${esc(c.title)}</p>
-            ${Admin.isLoggedIn() ? `<div style="display:flex; gap:4px; margin-top:8px;"><button class="btn-icon " style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Edit" onclick="editProperty('clients','${c.id}')">✏️</button><button class="btn-icon" style="padding:4px;font-size:0.8rem;border:none;background:none;cursor:pointer" title="Delete" onclick="deleteProperty('clients','${c.id}')">🗑️</button></div>` : ''}
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  </section>
-
-
-  <style>
-    .mv-row { display: grid; gap: 40px; align-items: center; }
-    @media (min-width: 768px) {
-      .mv-row { grid-template-columns: 1fr 1fr; }
-      .mv-row.reverse .mv-content { order: 2; }
-      .mv-row.reverse .mv-image-wrap { order: 1; }
-    }
-  </style>
-
-  <!-- Testimonial teaser -->
-  <section class="section" style="background:var(--navy);text-align:center">
-    <div class="container">
-      <p style="color:#FCA140;font-size:1.1rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px">${t('about_clients_say_pre')}</p>
-      <h2 style="color:var(--white);font-size:2rem;margin-bottom:24px">${t('about_clients_quote')}</h2>
-      <p style="color:rgba(255,255,255,0.6);margin-bottom:32px">${t('about_clients_author')}</p>
-      <button class="btn btn-secondary" onclick="navigate('reviews')">${t('about_btn_reviews')}</button>
     </div>
   </section>`;
 
@@ -2336,11 +2409,11 @@ document.addEventListener('DOMContentLoaded', () => {
   loadGlobalSettings();
 
   let path = location.hash.replace('#', '');
-  if (!path) path = 'about';
+  if (!path) path = 'home';
 
   // Set hash if it was empty so the URL looks correct (wrapped in try/catch for some file:// restrictions)
   try {
-    if (!location.hash) history.replaceState({ path: 'about' }, '', '#about');
+    if (!location.hash) history.replaceState({ path: 'home' }, '', '#home');
   } catch (e) {
     console.warn("History API restricted on file:// protocol", e);
   }
@@ -2350,7 +2423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('popstate', e => {
   let path = (e.state && e.state.path) || location.hash.replace('#', '');
-  if (!path) path = 'about';
+  if (!path) path = 'home';
   loadPage(path);
 });
 

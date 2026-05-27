@@ -1,5 +1,6 @@
 const te = {
     // Navigation
+    "nav_home": "హోమ్",
     "nav_about": "మా గురించి",
     "nav_projects": "ప్రాజెక్టులు",
     "nav_plots": "ప్లాట్లు",
