@@ -486,7 +486,7 @@ function buildFormHtml(type, d = {}, areas = []) {
     </div>
 
     <div class="form-group">
-      <label class="form-label">Property Images <span style="color:var(--mid-grey);font-weight:400">(up to 4 photos)</span></label>
+      <label class="form-label">Property Images <span style="color:var(--mid-grey);font-weight:400">(up to 15 photos)</span></label>
       <div class="img-upload-area" id="pf-drop-zone">
         <div class="img-preview-grid" id="pf-image-grid"></div>
         <label class="img-browse-btn" for="pf-image-input">
@@ -495,7 +495,7 @@ function buildFormHtml(type, d = {}, areas = []) {
             style="position:absolute;width:0;height:0;opacity:0"
             onchange="handleImageUpload(event)">
         </label>
-        <p class="img-upload-hint">JPG / PNG / WEBP &nbsp;·&nbsp; Max 2 MB each &nbsp;·&nbsp; Up to 4 images</p>
+        <p class="img-upload-hint">JPG / PNG / WEBP &nbsp;·&nbsp; Max 2 MB each &nbsp;·&nbsp; Up to 15 images</p>
       </div>
     </div>
 
@@ -817,7 +817,7 @@ function collectFormData(type) {
     legalBenefits: g('pf-legalBenefits'),
     investmentPotential: g('pf-investmentPotential'),
     videoUrl: g('pf-videoUrl'),
-    images,           // array of up to 4 base64/URL strings
+    images,           // array of up to 15 base64/URL strings
     imageUrl: images[0] || '',   // keep for backward compat with card renderer
   };
 
@@ -895,6 +895,29 @@ async function submitPropertyForm() {
   if (btn) btn.disabled = true;
   showToast('Saving property...', 'info');
 
+  // Re-compress all images to guarantee they fit within Firestore's 1MB limit
+  if (data.images && data.images.length > 0) {
+    showToast('Optimizing images for database...', 'info');
+    try {
+      const compressedImages = [];
+      for (const img of data.images) {
+        if (img.startsWith('data:image/')) {
+          // Compress to 800x800 maximum, 50% quality to ensure low payload size (~25-30KB per image)
+          const comp = await compressImage(img, 800, 800, 0.5);
+          compressedImages.push(comp);
+        } else {
+          compressedImages.push(img);
+        }
+      }
+      data.images = compressedImages;
+      if (compressedImages.length > 0) {
+        data.imageUrl = compressedImages[0];
+      }
+    } catch (compressionErr) {
+      console.error('Image compression failed during save:', compressionErr);
+    }
+  }
+
   try {
     if (editId) {
       await DB[type].update(editId, data);
@@ -922,8 +945,8 @@ async function handleImageUpload(event) {
   let count = grid ? grid.querySelectorAll('.img-preview-item').length : 0;
 
   for (const file of files) {
-    if (count >= 4) {
-      showToast('Maximum 4 images allowed.', 'error');
+    if (count >= 15) {
+      showToast('Maximum 15 images allowed.', 'error');
       break;
     }
 
@@ -945,7 +968,8 @@ async function handleImageUpload(event) {
         showToast(`Optimizing ${file.name}...`, 'info');
       }
 
-      const compressed = await compressImage(base64);
+      // Optimize image dimensions and quality to ensure 15 images stay under Firestore's 1MB document limit
+      const compressed = await compressImage(base64, 1000, 1000, 0.6);
       addImagePreview(compressed, grid);
       count++;
     } catch (err) {
@@ -994,8 +1018,8 @@ async function handleCompanyLogoUpload(event) {
 
 function addImagePreview(src, grid) {
   if (!grid) return;
-  if (grid.querySelectorAll('.img-preview-item').length >= 4) {
-    showToast('Maximum 4 images allowed.', 'error');
+  if (grid.querySelectorAll('.img-preview-item').length >= 15) {
+    showToast('Maximum 15 images allowed.', 'error');
     return;
   }
   const item = document.createElement('div');

@@ -232,9 +232,11 @@ async function renderDetail(type, id) {
   const imgs = (item.images && item.images.length > 0) ? item.images
     : (item.imageUrl ? [item.imageUrl] : []);
 
+  window._detailImages = imgs;
+
   const galleryHtml = imgs.length > 0
     ? `<div class="detail-gallery-container">
-        <div class="detail-main-image-wrap">
+        <div class="detail-main-image-wrap" style="cursor: zoom-in;" onclick="triggerLightbox()">
           <img id="detail-main-img" src="${esc(imgs[0])}" alt="Property Photo 1">
         </div>
         ${imgs.length > 1 ? `
@@ -393,6 +395,120 @@ function setGalleryActive(thumbEl) {
     };
   }, 250);
 }
+
+window.triggerLightbox = function() {
+  const activeThumb = document.querySelector('.detail-thumb.active');
+  const imgs = window._detailImages || [];
+  if (imgs.length === 0) return;
+  
+  let index = 0;
+  if (activeThumb) {
+    const thumbs = Array.from(document.querySelectorAll('.detail-thumb'));
+    index = thumbs.indexOf(activeThumb);
+    if (index === -1) index = 0;
+  }
+  window.openLightbox(imgs, index);
+};
+
+window.openLightbox = function(imgs, startIndex) {
+  let currentIndex = startIndex;
+
+  // Remove any existing lightbox
+  const oldLightbox = document.getElementById('lightbox-modal');
+  if (oldLightbox) oldLightbox.remove();
+
+  // Create lightbox overlay
+  const lightbox = document.createElement('div');
+  lightbox.id = 'lightbox-modal';
+  lightbox.className = 'lightbox-overlay';
+  
+  // Lightbox layout
+  lightbox.innerHTML = `
+    <button class="lightbox-close" id="lightbox-close-btn">&times;</button>
+    <button class="lightbox-nav lightbox-prev" id="lightbox-prev-btn">&#10094;</button>
+    <div class="lightbox-content">
+      <img id="lightbox-img" src="${imgs[currentIndex]}" alt="Enlarged property photo">
+      <div class="lightbox-counter" id="lightbox-counter-text">Image ${currentIndex + 1} of ${imgs.length}</div>
+    </div>
+    <button class="lightbox-nav lightbox-next" id="lightbox-next-btn">&#10095;</button>
+  `;
+
+  document.body.appendChild(lightbox);
+  document.body.style.overflow = 'hidden'; // Lock background scroll
+
+  const imgEl = lightbox.querySelector('#lightbox-img');
+  const counterEl = lightbox.querySelector('#lightbox-counter-text');
+  const prevBtn = lightbox.querySelector('#lightbox-prev-btn');
+  const nextBtn = lightbox.querySelector('#lightbox-next-btn');
+
+  // If there's only 1 image, hide nav buttons
+  if (imgs.length <= 1) {
+    prevBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+  }
+
+  function updateLightbox() {
+    imgEl.style.opacity = '0';
+    setTimeout(() => {
+      imgEl.src = imgs[currentIndex];
+      imgEl.onload = () => {
+        imgEl.style.opacity = '1';
+      };
+      counterEl.textContent = `Image ${currentIndex + 1} of ${imgs.length}`;
+    }, 200);
+  }
+
+  function showPrev() {
+    currentIndex = (currentIndex - 1 + imgs.length) % imgs.length;
+    updateLightbox();
+  }
+
+  function showNext() {
+    currentIndex = (currentIndex + 1) % imgs.length;
+    updateLightbox();
+  }
+
+  function closeLightbox() {
+    lightbox.classList.add('fade-out');
+    setTimeout(() => {
+      lightbox.remove();
+      document.body.style.overflow = ''; // Unlock scroll
+    }, 300);
+  }
+
+  // Event Listeners
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+  lightbox.querySelector('#lightbox-close-btn').addEventListener('click', closeLightbox);
+  
+  // Close on clicking overlay (outside content area)
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox || e.target.classList.contains('lightbox-content')) {
+      closeLightbox();
+    }
+  });
+
+  // Keyboard navigation
+  const handleKeyDown = (e) => {
+    if (e.key === 'ArrowLeft' && imgs.length > 1) showPrev();
+    if (e.key === 'ArrowRight' && imgs.length > 1) showNext();
+    if (e.key === 'Escape') closeLightbox();
+  };
+  window.addEventListener('keydown', handleKeyDown);
+
+  // Clean up keydown event listener when removed
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.removedNodes.forEach((node) => {
+        if (node.id === 'lightbox-modal') {
+          window.removeEventListener('keydown', handleKeyDown);
+          observer.disconnect();
+        }
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true });
+};
 
 function buildDetailSpecs(item, type) {
   const spec = (label, val) => {
@@ -574,7 +690,7 @@ async function renderHome() {
   </section>
 
 
-  <section class="section" style="background:var(--off-white);">
+  <section class="section" style="background:var(--white);">
     <div class="container">
       <div class="section-header mb-32">
         <p class="hero-eyebrow text-gold">FEATURED</p>
@@ -614,7 +730,7 @@ async function renderHome() {
     </div>
   </section>
 
-  <section class="section" style="background:var(--off-white);">
+  <section class="section" style="background:var(--white);">
     <div class="container">
       <div class="section-header mb-32">
         <p class="hero-eyebrow text-gold">FEATURED</p>
@@ -624,7 +740,7 @@ async function renderHome() {
       <div class="properties-grid" style="text-align:left;">
         ${onDemandVillas.length > 0 
           ? onDemandVillas.map(p => renderPropertyCard(p, 'villas')).join('')
-          : `<div style="grid-column: 1 / -1; background: var(--white); border: 2px dashed rgba(243, 119, 33, 0.15); border-radius: var(--radius-md); padding: 40px 24px; text-align: center; color: var(--text-dark); box-shadow: var(--shadow-sm);">
+          : `<div style="grid-column: 1 / -1; background: var(--off-white); border: 2px dashed rgba(243, 119, 33, 0.15); border-radius: var(--radius-md); padding: 40px 24px; text-align: center; color: var(--text-dark); box-shadow: var(--shadow-sm);">
               <div style="font-size: 2.2rem; margin-bottom: 12px;">🏡</div>
               <p style="font-weight: 600; font-size: 1rem; margin-bottom: 16px; color: var(--navy);">No Featured Villas On Demand Right Now</p>
               <a href="#contact" class="btn btn-primary btn-sm" onclick="navigate('contact')">📩 Enquire for Off-Market Deals</a>
@@ -635,7 +751,7 @@ async function renderHome() {
   </section>
 
   <!-- Social Media Handles -->
-  <section class="section" style="background:var(--white); padding-bottom:60px;">
+  <section class="section" style="background:var(--off-white); padding-bottom:60px;">
     <div class="container">
       <div class="section-header mb-32">
         <p class="hero-eyebrow text-gold">CONNECT WITH US</p>
@@ -672,7 +788,7 @@ async function renderHome() {
   </section>
 
   <!-- Find Your Perfect Property Categories -->
-  <section class="section" style="background:var(--off-white); padding-top:60px;">
+  <section class="section" style="background:var(--white); padding-top:60px;">
     <div class="container">
       <div class="section-header mb-32">
         <p class="hero-eyebrow text-gold">DISCOVER OUR PORTFOLIO</p>
@@ -713,7 +829,7 @@ async function renderHome() {
   </section>
 
   <!-- Our Clients / Associations -->
-  <section class="section" style="background:var(--white); text-align:center;">
+  <section class="section" style="background:var(--off-white); text-align:center;">
     <div class="container">
       <p class="hero-eyebrow text-gold">ASSOCIATIONS</p>
       <h2 class="text-navy mb-8">Proudly Collaborating With</h2>
