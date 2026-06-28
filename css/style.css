@@ -1797,6 +1797,8 @@ textarea.form-control {
   font-size: 0.95rem;
   color: var(--navy);
   font-weight: 600;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .detail-desc {
@@ -3192,6 +3194,20 @@ textarea.form-control {
     top: 16px;
     right: 16px;
     font-size: 2rem;
+  }
+}
+
+/* Responsive specs grid & vertical spacing for mobile */
+@media (max-width: 480px) {
+  .detail-specs-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 40px 0 24px;
   }
 }
 

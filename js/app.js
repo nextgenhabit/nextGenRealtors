@@ -261,22 +261,19 @@ async function renderDetail(type, id) {
     : `<div style="margin-top:16px;font-size:0.9rem;color:var(--mid-grey)">🎬 Video Tour: N/A</div>`;
 
   const mapsHtml = item.mapUrl
-    ? `<div style="margin-top:16px">
-        <a href="${esc(item.mapUrl)}" target="_blank" rel="noopener"
-           class="btn btn-ghost"
-           style="display:inline-flex;align-items:center;gap:8px;color:var(--navy);border-color:var(--light-grey);font-size:0.88rem">
-          📍 View on Google Maps
-        </a>
-       </div>`
-    : `<div style="margin-top:16px;font-size:0.88rem;color:var(--mid-grey)">📍 Google Maps: N/A</div>`;
+    ? `<a href="${esc(item.mapUrl)}" target="_blank" rel="noopener"
+         class="btn btn-ghost"
+         style="display:inline-flex;align-items:center;gap:8px;color:var(--navy);border-color:var(--light-grey);font-size:0.88rem;margin:0;">
+        📍 View on Google Maps
+      </a>`
+    : '';
 
   const contactHtml = item.contactNumber
-    ? `<div style="margin-top:8px">
-        <a href="tel:${esc(item.contactNumber)}"
-           style="display:inline-flex;align-items:center;gap:6px;font-size:0.88rem;color:var(--gold);font-weight:600;text-decoration:none">
-          📞 ${esc(item.contactNumber)}
-        </a>
-       </div>`
+    ? `<a href="tel:${esc(item.contactNumber)}"
+         class="btn btn-primary"
+         style="display:inline-flex;align-items:center;gap:8px;font-size:0.88rem;margin:0;">
+        📞 Call: ${esc(item.contactNumber)}
+      </a>`
     : '';
 
   const companyLogoHtml = item.companyLogoUrl 
@@ -305,7 +302,9 @@ async function renderDetail(type, id) {
   content.innerHTML = `
   <div class="hero">
     <div class="container" style="position:relative;z-index:1">
-      <button class="btn btn-ghost" style="position:absolute; top: -40px; left: 0; color: white; border-color: rgba(255,255,255,0.3);" onclick="navigate('${type}')">← Back to ${type.charAt(0).toUpperCase() + type.slice(1)}</button>
+      <div style="text-align: left; margin-bottom: 20px;">
+        <button class="btn btn-ghost btn-sm" style="color: white; border-color: rgba(255,255,255,0.3);" onclick="navigate('${type}')">← Back to ${type.charAt(0).toUpperCase() + type.slice(1)}</button>
+      </div>
       <p class="hero-eyebrow">${type.toUpperCase()}</p>
       <h1>${esc(item.title)}</h1>
     </div>
@@ -328,8 +327,11 @@ async function renderDetail(type, id) {
             <span style="font-size: 1.1rem; color: var(--navy);">📍 ${esc(item.location)}</span>
             ${item.propId ? `<span style="font-size:0.85rem;color:var(--mid-grey)">ID: #${item.propId}</span>` : ''}
           </div>
-          ${mapsHtml}
-          ${contactHtml}
+          ${(mapsHtml || contactHtml) ? `
+          <div class="detail-actions-row" style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; margin-bottom:16px;">
+            ${mapsHtml}
+            ${contactHtml}
+          </div>` : ''}
           <div class="detail-specs-grid" style="margin-top: 24px;">${specsHtml}</div>
           ${item.description ? `<div class="detail-desc" style="margin-top: 32px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Description</strong><br><br>${esc(item.description).split('\n').join('<br>')}</div>` : ''}
           ${item.locationAdvantages ? `<div class="detail-desc" style="margin-top: 24px;"><strong style="color:var(--navy);font-family:'Playfair Display',serif; font-size: 1.4rem;">Location Advantages</strong><br><br>${esc(item.locationAdvantages).split('\n').join('<br>')}</div>` : ''}
