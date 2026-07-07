@@ -525,12 +525,37 @@ function buildFormHtml(type, d = {}, areas = []) {
 
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">Direction</label>
+          <select class="form-control" id="pf-direction">
+            <option value="" ${!d.direction ? 'selected' : ''}>Select Direction</option>
+            ${['East', 'West', 'North', 'South']
+        .map(di => `<option value="${di}" ${d.direction === di ? 'selected' : ''}>${di}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <!-- spacer -->
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label class="form-label">Approved By</label>
           <input class="form-control" id="pf-approvedBy" placeholder="e.g. DTCP, BMRDA, Panchayat" value="${esc(d.approvedBy || '')}">
         </div>
         <div class="form-group">
           <label class="form-label">LP Number</label>
           <input class="form-control" id="pf-lpNumber" placeholder="e.g. LP No. 123/2024" value="${esc(d.lpNumber || '')}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nearest ORR Exit</label>
+          <input class="form-control" id="pf-nearestOrrExit" placeholder="e.g. Exit 1 or Exit 12" value="${esc(d.nearestOrrExit || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nearest Highway</label>
+          <input class="form-control" id="pf-nearestHighway" placeholder="e.g. NH 65" value="${esc(d.nearestHighway || '')}">
         </div>
       </div>
 
@@ -643,6 +668,31 @@ function buildFormHtml(type, d = {}, areas = []) {
             <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
           </select>
         </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nearest ORR Exit</label>
+          <input class="form-control" id="pf-nearestOrrExit" placeholder="e.g. Exit 1 or Exit 12" value="${esc(d.nearestOrrExit || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nearest Highway</label>
+          <input class="form-control" id="pf-nearestHighway" placeholder="e.g. NH 65" value="${esc(d.nearestHighway || '')}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Direction</label>
+          <select class="form-control" id="pf-direction">
+            <option value="" ${!d.direction ? 'selected' : ''}>Select Direction</option>
+            ${['East', 'West', 'North', 'South']
+        .map(di => `<option value="${di}" ${d.direction === di ? 'selected' : ''}>${di}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <!-- spacer -->
+        </div>
       </div>` + getPriceAndDesc(type, d);
   }
 
@@ -676,12 +726,44 @@ function buildFormHtml(type, d = {}, areas = []) {
             <span class="form-label" style="margin-bottom:0">🌿 Garden / Lawn</span>
           </label>
         </div>
-      <div class="form-group">
-        <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
-        <select class="form-control" id="pf-projectOnDemand">
-          <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
-          <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
-        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Project On Demand <span style="font-weight:400;color:var(--mid-grey)">(Admin Only)</span></label>
+          <select class="form-control" id="pf-projectOnDemand">
+            <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
+            <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <!-- spacer -->
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nearest ORR Exit</label>
+          <input class="form-control" id="pf-nearestOrrExit" placeholder="e.g. Exit 1 or Exit 12" value="${esc(d.nearestOrrExit || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nearest Highway</label>
+          <input class="form-control" id="pf-nearestHighway" placeholder="e.g. NH 65" value="${esc(d.nearestHighway || '')}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Direction</label>
+          <select class="form-control" id="pf-direction">
+            <option value="" ${!d.direction ? 'selected' : ''}>Select Direction</option>
+            ${['East', 'West', 'North', 'South']
+        .map(di => `<option value="${di}" ${d.direction === di ? 'selected' : ''}>${di}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <!-- spacer -->
+        </div>
       </div>` + getPriceAndDesc(type, d);
   } else if (type === 'commercial') {
     return commonTop + `
@@ -719,6 +801,31 @@ function buildFormHtml(type, d = {}, areas = []) {
             <option value="No" ${d.projectOnDemand !== 'Yes' ? 'selected' : ''}>No</option>
             <option value="Yes" ${d.projectOnDemand === 'Yes' ? 'selected' : ''}>Yes</option>
           </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nearest ORR Exit</label>
+          <input class="form-control" id="pf-nearestOrrExit" placeholder="e.g. Exit 1 or Exit 12" value="${esc(d.nearestOrrExit || '')}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nearest Highway</label>
+          <input class="form-control" id="pf-nearestHighway" placeholder="e.g. NH 65" value="${esc(d.nearestHighway || '')}">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Direction</label>
+          <select class="form-control" id="pf-direction">
+            <option value="" ${!d.direction ? 'selected' : ''}>Select Direction</option>
+            ${['East', 'West', 'North', 'South']
+        .map(di => `<option value="${di}" ${d.direction === di ? 'selected' : ''}>${di}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <!-- spacer -->
         </div>
       </div>` + getPriceAndDesc(type, d);
   } else if (type === 'clients') {
@@ -828,19 +935,37 @@ function collectFormData(type) {
       lpNumber: g('pf-lpNumber'),
       reraApproved: (document.getElementById('pf-rera-yes')?.checked ? 'Yes' : 'No'),
       projectOnDemand: g('pf-projectOnDemand'),
+      nearestOrrExit: g('pf-nearestOrrExit'),
+      nearestHighway: g('pf-nearestHighway'),
+      direction: g('pf-direction'),
     };
   }
   if (type === 'flats') {
     return { ...base, bhk: g('pf-bhk'), area: g('pf-area'), floor: g('pf-floor'), furnishing: g('pf-furnishing'), amenities: g('pf-amenities'), projectOnDemand: g('pf-projectOnDemand') };
   }
   if (type === 'apartments') {
-    return { ...base, acres: g('pf-acres'), blocks: g('pf-blocks'), flatSizes: g('pf-flatSizes'), totalUnits: g('pf-totalUnits'), amenities: g('pf-amenities'), floors: g('pf-floors'), clubHouseSize: g('pf-clubHouseSize'), projectOnDemand: g('pf-projectOnDemand') };
+    return {
+      ...base, acres: g('pf-acres'), blocks: g('pf-blocks'), flatSizes: g('pf-flatSizes'), totalUnits: g('pf-totalUnits'), amenities: g('pf-amenities'), floors: g('pf-floors'), clubHouseSize: g('pf-clubHouseSize'), projectOnDemand: g('pf-projectOnDemand'),
+      nearestOrrExit: g('pf-nearestOrrExit'),
+      nearestHighway: g('pf-nearestHighway'),
+      direction: g('pf-direction'),
+    };
   }
   if (type === 'villas') {
-    return { ...base, bedrooms: g('pf-bedrooms'), landArea: g('pf-landArea'), builtUpArea: g('pf-builtUpArea'), hasPool: gb('pf-hasPool'), hasGarden: gb('pf-hasGarden'), projectOnDemand: g('pf-projectOnDemand') };
+    return {
+      ...base, bedrooms: g('pf-bedrooms'), landArea: g('pf-landArea'), builtUpArea: g('pf-builtUpArea'), hasPool: gb('pf-hasPool'), hasGarden: gb('pf-hasGarden'), projectOnDemand: g('pf-projectOnDemand'),
+      nearestOrrExit: g('pf-nearestOrrExit'),
+      nearestHighway: g('pf-nearestHighway'),
+      direction: g('pf-direction'),
+    };
   }
   if (type === 'commercial') {
-    return { ...base, area: g('pf-area'), floor: g('pf-floor'), washrooms: g('pf-washrooms'), parking: g('pf-parking'), furnishing: g('pf-furnishing'), projectOnDemand: g('pf-projectOnDemand') };
+    return {
+      ...base, area: g('pf-area'), floor: g('pf-floor'), washrooms: g('pf-washrooms'), parking: g('pf-parking'), furnishing: g('pf-furnishing'), projectOnDemand: g('pf-projectOnDemand'),
+      nearestOrrExit: g('pf-nearestOrrExit'),
+      nearestHighway: g('pf-nearestHighway'),
+      direction: g('pf-direction'),
+    };
   }
   if (type === 'clients') {
     return {

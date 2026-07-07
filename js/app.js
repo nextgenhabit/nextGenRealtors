@@ -223,6 +223,9 @@ async function renderDetail(type, id) {
     if (item.location) item.location = await I18n.translateDynamic(item.location);
     if (item.village) item.village = await I18n.translateDynamic(item.village);
     if (item.district) item.district = await I18n.translateDynamic(item.district);
+    if (item.nearestOrrExit) item.nearestOrrExit = await I18n.translateDynamic(item.nearestOrrExit);
+    if (item.nearestHighway) item.nearestHighway = await I18n.translateDynamic(item.nearestHighway);
+    if (item.direction) item.direction = await I18n.translateDynamic(item.direction);
   }
 
   const icon = type === 'plots' ? '🌿' : type === 'flats' ? '🏢' : type === 'apartments' ? '🏢' : type === 'villas' ? '🏡' : '🏙️';
@@ -523,13 +526,16 @@ function buildDetailSpecs(item, type) {
     + spec('Approved By', item.approvedBy)
     + spec('LP Number', item.lpNumber)
     + spec('RERA Approved', item.reraApproved)
+    + spec(t('spec_nearest_orr_exit', 'Nearest ORR Exit'), item.nearestOrrExit)
+    + spec(t('spec_nearest_highway', 'Nearest Highway'), item.nearestHighway)
+    + spec(t('spec_direction', 'Direction'), item.direction)
     + spec('Contact', item.contactNumber)
     + spec('Price per Sq Yard', item.price)
     + spec('Type', 'Open Plot');
   if (type === 'flats') return spec('District', item.district) + spec('Village', item.village) + spec('BHK', item.bhk) + spec('Area', item.area) + spec('Floor', item.floor) + spec('Furnishing', item.furnishing) + spec('Amenities', item.amenities) + spec('Price', item.price);
-  if (type === 'apartments') return spec('District', item.district) + spec('Village', item.village) + spec('Total Acres', item.acres) + spec('Blocks', item.blocks) + spec('Floors', item.floors) + spec('Flat Sizes', item.flatSizes) + spec('Total Units', item.totalUnits) + spec('Club House', item.clubHouseSize) + spec('Amenities', item.amenities) + spec('Price', item.price);
-  if (type === 'villas') return spec('District', item.district) + spec('Village', item.village) + spec('Bedrooms', item.bedrooms) + spec('Land Area', item.landArea) + spec('Built-up Area', item.builtUpArea) + spec('Pool', item.hasPool ? '✅ Yes' : '❌ No') + spec('Garden', item.hasGarden ? '✅ Yes' : '❌ No') + spec('Price', item.price);
-  if (type === 'commercial') return spec('District', item.district) + spec('Village', item.village) + spec('Super Built-up Area', item.area) + spec('Floor', item.floor) + spec('Washrooms', item.washrooms) + spec('Parking', item.parking) + spec('Furnishing', item.furnishing) + spec('Price', item.price);
+  if (type === 'apartments') return spec('District', item.district) + spec('Village', item.village) + spec('Total Acres', item.acres) + spec('Blocks', item.blocks) + spec('Floors', item.floors) + spec('Flat Sizes', item.flatSizes) + spec('Total Units', item.totalUnits) + spec('Club House', item.clubHouseSize) + spec('Amenities', item.amenities) + spec('Price', item.price) + spec(t('spec_nearest_orr_exit', 'Nearest ORR Exit'), item.nearestOrrExit) + spec(t('spec_nearest_highway', 'Nearest Highway'), item.nearestHighway) + spec(t('spec_direction', 'Direction'), item.direction);
+  if (type === 'villas') return spec('District', item.district) + spec('Village', item.village) + spec('Bedrooms', item.bedrooms) + spec('Land Area', item.landArea) + spec('Built-up Area', item.builtUpArea) + spec('Pool', item.hasPool ? '✅ Yes' : '❌ No') + spec('Garden', item.hasGarden ? '✅ Yes' : '❌ No') + spec('Price', item.price) + spec(t('spec_nearest_orr_exit', 'Nearest ORR Exit'), item.nearestOrrExit) + spec(t('spec_nearest_highway', 'Nearest Highway'), item.nearestHighway) + spec(t('spec_direction', 'Direction'), item.direction);
+  if (type === 'commercial') return spec('District', item.district) + spec('Village', item.village) + spec('Super Built-up Area', item.area) + spec('Floor', item.floor) + spec('Washrooms', item.washrooms) + spec('Parking', item.parking) + spec('Furnishing', item.furnishing) + spec('Price', item.price) + spec(t('spec_nearest_orr_exit', 'Nearest ORR Exit'), item.nearestOrrExit) + spec(t('spec_nearest_highway', 'Nearest Highway'), item.nearestHighway) + spec(t('spec_direction', 'Direction'), item.direction);
   return '';
 }
 
@@ -1141,6 +1147,9 @@ async function renderListings(type) {
       if (item.title) item.title = await I18n.translateDynamic(item.title);
       if (item.description) item.description = await I18n.translateDynamic(item.description);
       if (item.location) item.location = await I18n.translateDynamic(item.location);
+      if (item.nearestOrrExit) item.nearestOrrExit = await I18n.translateDynamic(item.nearestOrrExit);
+      if (item.nearestHighway) item.nearestHighway = await I18n.translateDynamic(item.nearestHighway);
+      if (item.direction) item.direction = await I18n.translateDynamic(item.direction);
     }
   }
 
@@ -1151,6 +1160,15 @@ async function renderListings(type) {
          ➕ Add New ${singular}
        </button>`
     : '';
+
+  let orrExitOptions = '';
+  let highwayOptions = '';
+  if (['plots', 'villas', 'apartments', 'commercial'].includes(type)) {
+    const exits = [...new Set(items.map(i => i.nearestOrrExit).filter(Boolean))].sort();
+    const highways = [...new Set(items.map(i => i.nearestHighway).filter(Boolean))].sort();
+    orrExitOptions = exits.map(e => `<option value="${esc(e)}">${esc(e)}</option>`).join('');
+    highwayOptions = highways.map(h => `<option value="${esc(h)}">${esc(h)}</option>`).join('');
+  }
 
   const viewToggleBtn = `
     <button id="view-toggle-btn" class="view-toggle-btn ${window._viewMode === 'table' ? 'active' : ''}" onclick="toggleViewMode('${type}')">
@@ -1164,6 +1182,23 @@ async function renderListings(type) {
       ${items.length > 0 ? `
       <div class="filter-bar">
         <input type="text" class="filter-input" id="listing-search" placeholder="${t('filter_search_placeholder')}" oninput="filterAndSortListings('${type}', true)">
+        ${['plots', 'villas', 'apartments', 'commercial'].includes(type) ? `
+        <select class="filter-select" id="orr-exit-select" onchange="filterAndSortListings('${type}', true)">
+          <option value="all">${t('filter_orr_exit_all', 'All ORR Exits')}</option>
+          ${orrExitOptions}
+        </select>
+        <select class="filter-select" id="highway-select" onchange="filterAndSortListings('${type}', true)">
+          <option value="all">${t('filter_highway_all', 'All Highways')}</option>
+          ${highwayOptions}
+        </select>
+        <select class="filter-select" id="direction-select" onchange="filterAndSortListings('${type}', true)">
+          <option value="all">${t('filter_direction_all', 'All Directions')}</option>
+          <option value="East">${t('direction_east', 'East')}</option>
+          <option value="West">${t('direction_west', 'West')}</option>
+          <option value="North">${t('direction_north', 'North')}</option>
+          <option value="South">${t('direction_south', 'South')}</option>
+        </select>
+        ` : ''}
         <select class="filter-select" id="status-select" onchange="filterAndSortListings('${type}', true)">
           <option value="all">${t('filter_status_all')}</option>
           <option value="available">${t('filter_status_avail')}</option>
@@ -1196,10 +1231,16 @@ async function filterAndSortListings(type, resetPage = false) {
   const sortSelect = document.getElementById('sort-select');
   const statusSelect = document.getElementById('status-select');
   const searchInput = document.getElementById('listing-search');
+  const orrExitSelect = document.getElementById('orr-exit-select');
+  const highwaySelect = document.getElementById('highway-select');
+  const directionSelect = document.getElementById('direction-select');
 
   const sortVal = sortSelect ? sortSelect.value : 'newest';
   const statusVal = statusSelect ? statusSelect.value : 'all';
   const searchVal = searchInput ? searchInput.value.toLowerCase() : '';
+  const orrExitVal = orrExitSelect ? orrExitSelect.value : 'all';
+  const highwayVal = highwaySelect ? highwaySelect.value : 'all';
+  const directionVal = directionSelect ? directionSelect.value : 'all';
 
   let items = await DB[type].get();
   const priceVal = p => parseFloat((p || '').replace(/[^0-9.]/g, '')) || 0;
@@ -1209,6 +1250,9 @@ async function filterAndSortListings(type, resetPage = false) {
       if (item.title) item.title = await I18n.translateDynamic(item.title);
       if (item.description) item.description = await I18n.translateDynamic(item.description);
       if (item.location) item.location = await I18n.translateDynamic(item.location);
+      if (item.nearestOrrExit) item.nearestOrrExit = await I18n.translateDynamic(item.nearestOrrExit);
+      if (item.nearestHighway) item.nearestHighway = await I18n.translateDynamic(item.nearestHighway);
+      if (item.direction) item.direction = await I18n.translateDynamic(item.direction);
     }
   }
 
@@ -1219,10 +1263,23 @@ async function filterAndSortListings(type, resetPage = false) {
     items = items.filter(i => i.status === 'Sold Out');
   }
 
+  // Filter out by ORR Exit and Highway dropdowns for plots, villas, apartments, commercial
+  if (['plots', 'villas', 'apartments', 'commercial'].includes(type)) {
+    if (orrExitVal !== 'all') {
+      items = items.filter(i => i.nearestOrrExit === orrExitVal);
+    }
+    if (highwayVal !== 'all') {
+      items = items.filter(i => i.nearestHighway === highwayVal);
+    }
+    if (directionVal !== 'all') {
+      items = items.filter(i => i.direction === directionVal);
+    }
+  }
+
   // Filter out by Search string
   if (searchVal.trim() !== '') {
     items = items.filter(i => {
-      const matchText = `${i.title || ''} ${i.description || ''} ${i.location || ''}`.toLowerCase();
+      const matchText = `${i.title || ''} ${i.description || ''} ${i.location || ''} ${i.nearestOrrExit || ''} ${i.nearestHighway || ''} ${i.direction || ''}`.toLowerCase();
       return matchText.includes(searchVal);
     });
   }
